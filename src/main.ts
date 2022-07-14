@@ -112,9 +112,7 @@ new ApolloClient({
     initial: [initial = {
       timestamp: 0, smartPoolShares: '0', smartPoolAssets: '0', smartPoolEarningsAccumulator: '0',
     }],
-    final: [final = {
-      timestamp: 0, smartPoolShares: '0', smartPoolAssets: '0', smartPoolEarningsAccumulator: '0',
-    }],
+    final: [final = initial],
     initialAccumulatedEarningsAccrual: [initialAccumulatedEarningsAccrual = { timestamp: 0 }],
     finalAccumulatedEarningsAccrual: [finalAccumulatedEarningsAccrual = { timestamp: 0 }],
     accumulatedEarningsSmoothFactor: [accumulatedEarningsSmoothFactor],

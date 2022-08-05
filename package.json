@@ -5,8 +5,7 @@
     "lint": "eslint --ext .ts,.js ."
   },
   "engines": {
-    "node": ">=16",
-    "npm": ">=7"
+    "node": ">=16"
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",

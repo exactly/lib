@@ -7,7 +7,10 @@ module.exports = {
     'plugin:eslint-comments/recommended',
   ],
   rules: {
+    yoda: 'off',
+    'no-bitwise': 'off',
     'no-console': 'off',
+    'no-param-reassign': 'off',
     'eslint-comments/no-unused-disable': 'error',
   },
   overrides: [

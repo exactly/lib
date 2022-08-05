@@ -49,20 +49,20 @@ export default async (market: string) => {
         earningsAccumulator
       }
 
-      initialAccumulatorAccrual: marketUpdateds(
+      initialAccumulatorAccrual: accumulatorAccrueds(
         first: 1
         orderBy: timestamp
         orderDirection: desc
-        where: { market: $market, maturity: 0, timestamp_lte: $start }
+        where: { market: $market, timestamp_lte: $start }
       ) {
         timestamp
       }
 
-      finalAccumulatorAccrual: marketUpdateds(
+      finalAccumulatorAccrual: accumulatorAccrueds(
         first: 1
         orderBy: timestamp
         orderDirection: desc
-        where: { market: $market, maturity: 0 }
+        where: { market: $market }
       ) {
         timestamp
       }
@@ -77,7 +77,7 @@ export default async (market: string) => {
       }
 
       ${futurePools(timeWindow.start).map((maturity) => `
-        initial${maturity}: marketUpdateds(
+        initial${maturity}: fixedEarningsUpdateds(
           first: 1
           orderBy: timestamp
           orderDirection: desc
@@ -85,12 +85,12 @@ export default async (market: string) => {
         ) {
           timestamp
           maturity
-          maturityUnassignedEarnings
+          unassignedEarnings
         }
       `).join('')}
 
       ${futurePools(timeWindow.end).map((maturity) => `
-        final${maturity}: marketUpdateds(
+        final${maturity}: fixedEarningsUpdateds(
           first: 1
           orderBy: timestamp
           orderDirection: desc
@@ -98,7 +98,7 @@ export default async (market: string) => {
         ) {
           timestamp
           maturity
-          maturityUnassignedEarnings
+          unassignedEarnings
         }
       `).join('')}
     }
@@ -125,11 +125,11 @@ export default async (market: string) => {
       BigInt(floatingAssets)
       + maturities.reduce((
         smartPoolEarnings,
-        { timestamp: lastAccrual, maturity, maturityUnassignedEarnings },
+        { timestamp: lastAccrual, maturity, unassignedEarnings },
       ) => (
         smartPoolEarnings
           + (maturity > lastAccrual
-            ? (BigInt(maturityUnassignedEarnings) * BigInt(timestamp - lastAccrual))
+            ? (BigInt(unassignedEarnings) * BigInt(timestamp - lastAccrual))
               / BigInt(maturity - lastAccrual)
             : 0n)
       ), 0n)
@@ -173,8 +173,7 @@ interface MarketState extends State {
   earningsAccumulator: string;
 }
 
-interface FixedPool {
-  timestamp: number;
+interface FixedPool extends State {
   maturity: number;
-  maturityUnassignedEarnings: string;
+  unassignedEarnings: string;
 }

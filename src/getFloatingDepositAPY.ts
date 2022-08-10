@@ -25,7 +25,7 @@ export default async (market: string) => {
       $market: Bytes
       $start: Int
     ) {
-      initial: marketUpdateds(
+      initial: marketUpdates(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -37,7 +37,7 @@ export default async (market: string) => {
         earningsAccumulator
       }
 
-      final: marketUpdateds(
+      final: marketUpdates(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -49,7 +49,7 @@ export default async (market: string) => {
         earningsAccumulator
       }
 
-      initialAccumulatorAccrual: accumulatorAccrueds(
+      initialAccumulatorAccrual: accumulatorAccruals(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -58,7 +58,7 @@ export default async (market: string) => {
         timestamp
       }
 
-      finalAccumulatorAccrual: accumulatorAccrueds(
+      finalAccumulatorAccrual: accumulatorAccruals(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -77,7 +77,7 @@ export default async (market: string) => {
       }
 
       ${futurePools(timeWindow.start).map((maturity) => `
-        initial${maturity}: fixedEarningsUpdateds(
+        initial${maturity}: fixedEarningsUpdates(
           first: 1
           orderBy: timestamp
           orderDirection: desc
@@ -90,7 +90,7 @@ export default async (market: string) => {
       `).join('')}
 
       ${futurePools(timeWindow.end).map((maturity) => `
-        final${maturity}: fixedEarningsUpdateds(
+        final${maturity}: fixedEarningsUpdates(
           first: 1
           orderBy: timestamp
           orderDirection: desc

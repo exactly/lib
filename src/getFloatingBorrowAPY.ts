@@ -26,7 +26,7 @@ export default async (market: string) => {
       $market: Bytes
       $start: Int
     ) {
-      initial: marketUpdateds(
+      initial: marketUpdates(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -38,7 +38,7 @@ export default async (market: string) => {
         floatingDebt
       }
 
-      final: marketUpdateds(
+      final: marketUpdates(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -50,7 +50,7 @@ export default async (market: string) => {
         floatingDebt
       }
 
-      initialDebtUpdate: floatingDebtUpdateds(
+      initialDebtUpdate: floatingDebtUpdates(
         first: 1
         orderBy: timestamp
         orderDirection: desc
@@ -60,7 +60,7 @@ export default async (market: string) => {
         utilization
       }
 
-      finalDebtUpdate: floatingDebtUpdateds(
+      finalDebtUpdate: floatingDebtUpdates(
         first: 1
         orderBy: timestamp
         orderDirection: desc

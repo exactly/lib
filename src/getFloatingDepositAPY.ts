@@ -1,24 +1,29 @@
 import request from 'graphql-request';
 import { formatFixed } from '@ethersproject/bignumber';
-import INTERVAL from './INTERVAL';
+import {
+  DEFAULT_FLOATING_DEBT_STATE, DEFAULT_MARKET_STATE, DEFAULT_STATE, WAD,
+  futurePools, totalAssets,
+} from './floatingAPY';
+import type {
+  FixedPool, FloatingDebtState, IRMParameters, MarketState, State,
+} from './floatingAPY';
 import SUBGRAPH_URL from './SUBGRAPH_URL';
-import MAX_FUTURE_POOLS from './MAX_FUTURE_POOLS';
-import futurePools from './futurePools';
-import { WAD } from './FixedPointMathLib';
 
-export default async (market: string) => {
+export default async (market: string, maxFuturePools = 3) => {
   const timeWindow = {
-    start: Math.floor(Date.now() / 1_000) - 86_400 * 7,
+    start: Math.floor(Date.now() / 1_000) - 3_600,
     end: Math.floor(Date.now() / 1_000),
   };
   const {
-    initial: [initial = {
-      timestamp: 0, floatingDepositShares: '0', floatingAssets: '0', earningsAccumulator: '0',
-    }],
+    initial: [initial = DEFAULT_MARKET_STATE],
     final: [final = initial],
-    initialAccumulatorAccrual: [{ timestamp: initialAccumulatorAccrual } = { timestamp: 0 }],
+    initialAccumulatorAccrual: [{ timestamp: initialAccumulatorAccrual } = DEFAULT_STATE],
     finalAccumulatorAccrual: [{ timestamp: finalAccumulatorAccrual } = { timestamp: 0 }],
     earningsAccumulatorSmoothFactor: [{ earningsAccumulatorSmoothFactor }],
+    initialDebtUpdate: [initialDebtUpdate = DEFAULT_FLOATING_DEBT_STATE],
+    finalDebtUpdate: [finalDebtUpdate = initialDebtUpdate],
+    floatingParameters: [floatingParameters],
+    treasuryFeeRate: [{ treasuryFeeRate }],
     ...allMaturities
   } = await request(SUBGRAPH_URL, `
     query(
@@ -34,6 +39,8 @@ export default async (market: string) => {
         timestamp
         floatingDepositShares
         floatingAssets
+        floatingBorrowShares
+        floatingDebt
         earningsAccumulator
       }
 
@@ -46,6 +53,8 @@ export default async (market: string) => {
         timestamp
         floatingDepositShares
         floatingAssets
+        floatingBorrowShares
+        floatingDebt
         earningsAccumulator
       }
 
@@ -67,6 +76,26 @@ export default async (market: string) => {
         timestamp
       }
 
+      initialDebtUpdate: floatingDebtUpdates(
+        first: 1
+        orderBy: timestamp
+        orderDirection: desc
+        where: { market: $market, timestamp_lte: $start }
+      ) {
+        timestamp
+        utilization
+      }
+
+      finalDebtUpdate: floatingDebtUpdates(
+        first: 1
+        orderBy: timestamp
+        orderDirection: desc
+        where: { market: $market }
+      ) {
+        timestamp
+        utilization
+      }
+
       earningsAccumulatorSmoothFactor: earningsAccumulatorSmoothFactorSets(
         first: 1
         orderBy: timestamp
@@ -76,7 +105,27 @@ export default async (market: string) => {
         earningsAccumulatorSmoothFactor
       }
 
-      ${futurePools(timeWindow.start).map((maturity) => `
+      treasuryFeeRate: treasurySets(
+        first: 1
+        orderBy: timestamp
+        orderDirection: desc
+        where: { market: $market }
+      ) {
+        treasuryFeeRate
+      }
+
+      floatingParameters: floatingParametersSets(
+        first: 1
+        orderBy: timestamp
+        orderDirection: desc
+      ) {
+        curveA
+        curveB
+        maxUtilization
+        fullUtilization
+      }
+
+      ${futurePools(timeWindow.start, maxFuturePools).map((maturity) => `
         initial${maturity}: fixedEarningsUpdates(
           first: 1
           orderBy: timestamp
@@ -89,7 +138,7 @@ export default async (market: string) => {
         }
       `).join('')}
 
-      ${futurePools(timeWindow.end).map((maturity) => `
+      ${futurePools(timeWindow.end, maxFuturePools).map((maturity) => `
         final${maturity}: fixedEarningsUpdates(
           first: 1
           orderBy: timestamp
@@ -108,45 +157,26 @@ export default async (market: string) => {
     initialAccumulatorAccrual: State[];
     finalAccumulatorAccrual: State[];
     earningsAccumulatorSmoothFactor: { earningsAccumulatorSmoothFactor: string }[];
+    initialDebtUpdate: FloatingDebtState[];
+    finalDebtUpdate: FloatingDebtState[];
+    floatingParameters: IRMParameters[];
+    treasuryFeeRate: { treasuryFeeRate: string }[];
   };
 
-  const fixedPool = (prefix: string) => Object.entries(allMaturities)
+  const fixedPools = (prefix: string) => Object.entries(allMaturities)
     .filter(([key, pools]: [string, FixedPool[]]) => pools.length && key.startsWith(prefix))
     .map(([, [pool]]: [string, FixedPool[]]) => pool);
-
-  const totalAssets = (
-    timestamp: number,
-    { floatingAssets, earningsAccumulator }: MarketState,
-    accumulatorAccrual: number,
-    maturities: FixedPool[],
-  ) => {
-    const elapsed = BigInt(timestamp - accumulatorAccrual);
-    return (
-      BigInt(floatingAssets)
-      + maturities.reduce((
-        smartPoolEarnings,
-        { timestamp: lastAccrual, maturity, unassignedEarnings },
-      ) => (
-        smartPoolEarnings
-          + (maturity > lastAccrual
-            ? (BigInt(unassignedEarnings) * BigInt(timestamp - lastAccrual))
-              / BigInt(maturity - lastAccrual)
-            : 0n)
-      ), 0n)
-      + (elapsed
-        && (BigInt(earningsAccumulator) * elapsed)
-          / (elapsed
-            + (BigInt(earningsAccumulatorSmoothFactor) * BigInt(MAX_FUTURE_POOLS * INTERVAL))
-              / WAD))
-    );
-  };
 
   const initialShares = BigInt(initial.floatingDepositShares);
   const initialAssets = totalAssets(
     timeWindow.start,
     initial,
     initialAccumulatorAccrual,
-    fixedPool('initial'),
+    fixedPools('initial'),
+    earningsAccumulatorSmoothFactor,
+    initialDebtUpdate,
+    floatingParameters,
+    treasuryFeeRate,
   );
 
   const finalShares = BigInt(final.floatingDepositShares);
@@ -154,7 +184,11 @@ export default async (market: string) => {
     timeWindow.end,
     final,
     finalAccumulatorAccrual,
-    fixedPool('final'),
+    fixedPools('final'),
+    earningsAccumulatorSmoothFactor,
+    finalDebtUpdate,
+    floatingParameters,
+    treasuryFeeRate,
   );
 
   const denominator = initialShares ? (initialAssets * WAD) / initialShares : WAD;
@@ -162,18 +196,3 @@ export default async (market: string) => {
   const time = 31_536_000 / (timeWindow.end - timeWindow.start);
   return ((Number(formatFixed(result, 18)) ** time - 1) * 100).toFixed(2);
 };
-
-interface State {
-  timestamp: number;
-}
-
-interface MarketState extends State {
-  floatingDepositShares: string;
-  floatingAssets: string;
-  earningsAccumulator: string;
-}
-
-interface FixedPool extends State {
-  maturity: number;
-  unassignedEarnings: string;
-}

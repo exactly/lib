@@ -5,7 +5,7 @@ import {
   futurePools, totalAssets,
 } from './floatingAPY';
 import type {
-  FixedPool, FloatingDebtState, IRMParameters, MarketState, State,
+  FixedPool, FloatingDebtState, InterestRateModel, MarketState, State,
 } from './floatingAPY';
 import SUBGRAPH_URL from './SUBGRAPH_URL';
 
@@ -22,7 +22,7 @@ export default async (market: string, maxFuturePools = 3) => {
     earningsAccumulatorSmoothFactor: [{ earningsAccumulatorSmoothFactor }],
     initialDebtUpdate: [initialDebtUpdate = DEFAULT_FLOATING_DEBT_STATE],
     finalDebtUpdate: [finalDebtUpdate = initialDebtUpdate],
-    floatingParameters: [floatingParameters],
+    interestRateModel: [interestRateModel],
     treasuryFeeRate: [{ treasuryFeeRate }],
     ...allMaturities
   } = await request(SUBGRAPH_URL, `
@@ -114,15 +114,15 @@ export default async (market: string, maxFuturePools = 3) => {
         treasuryFeeRate
       }
 
-      floatingParameters: floatingParametersSets(
+      interestRateModel: interestRateModelSets(
         first: 1
         orderBy: timestamp
         orderDirection: desc
+        where: { market: $market }
       ) {
-        curveA
-        curveB
-        maxUtilization
-        fullUtilization
+        floatingCurveA
+        floatingCurveB
+        floatingMaxUtilization
       }
 
       ${futurePools(timeWindow.start, maxFuturePools).map((maturity) => `
@@ -159,7 +159,7 @@ export default async (market: string, maxFuturePools = 3) => {
     earningsAccumulatorSmoothFactor: { earningsAccumulatorSmoothFactor: string }[];
     initialDebtUpdate: FloatingDebtState[];
     finalDebtUpdate: FloatingDebtState[];
-    floatingParameters: IRMParameters[];
+    interestRateModel: InterestRateModel[];
     treasuryFeeRate: { treasuryFeeRate: string }[];
   };
 
@@ -175,7 +175,7 @@ export default async (market: string, maxFuturePools = 3) => {
     fixedPools('initial'),
     earningsAccumulatorSmoothFactor,
     initialDebtUpdate,
-    floatingParameters,
+    interestRateModel,
     treasuryFeeRate,
   );
 
@@ -187,7 +187,7 @@ export default async (market: string, maxFuturePools = 3) => {
     fixedPools('final'),
     earningsAccumulatorSmoothFactor,
     finalDebtUpdate,
-    floatingParameters,
+    interestRateModel,
     treasuryFeeRate,
   );
 

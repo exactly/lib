@@ -1,6 +1,6 @@
 import request from 'graphql-request';
 import { formatFixed } from '@ethersproject/bignumber';
-import type { FloatingDebtState, IRMParameters, MarketState } from './floatingAPY';
+import type { FloatingDebtState, InterestRateModel, MarketState } from './floatingAPY';
 import {
   DEFAULT_MARKET_STATE, DEFAULT_FLOATING_DEBT_STATE, totalFloatingBorrowAssets, WAD,
 } from './floatingAPY';
@@ -16,7 +16,7 @@ export default async (market: string) => {
     final: [final = initial],
     initialDebtUpdate: [initialDebtUpdate = DEFAULT_FLOATING_DEBT_STATE],
     finalDebtUpdate: [finalDebtUpdate = initialDebtUpdate],
-    floatingParameters: [floatingParameters],
+    interestRateModel: [interestRateModel],
   } = await request(SUBGRAPH_URL, `
     query(
       $market: Bytes
@@ -70,15 +70,15 @@ export default async (market: string) => {
         utilization
       }
 
-      floatingParameters: floatingParametersSets(
+      interestRateModel: interestRateModelSets(
         first: 1
         orderBy: timestamp
         orderDirection: desc
+        where: { market: $market }
       ) {
-        curveA
-        curveB
-        maxUtilization
-        fullUtilization
+        floatingCurveA
+        floatingCurveB
+        floatingMaxUtilization
       }
     }
   `, { market, ...timeWindow }) as {
@@ -86,7 +86,7 @@ export default async (market: string) => {
     final: MarketState[];
     initialDebtUpdate: FloatingDebtState[];
     finalDebtUpdate: FloatingDebtState[];
-    floatingParameters: IRMParameters[];
+    interestRateModel: InterestRateModel[];
   };
 
   const initialShares = BigInt(initial.floatingBorrowShares);
@@ -94,7 +94,7 @@ export default async (market: string) => {
     timeWindow.start,
     initial,
     initialDebtUpdate,
-    floatingParameters,
+    interestRateModel,
   );
 
   const finalShares = BigInt(final.floatingBorrowShares);
@@ -102,7 +102,7 @@ export default async (market: string) => {
     timeWindow.end,
     final,
     finalDebtUpdate,
-    floatingParameters,
+    interestRateModel,
   );
 
   const denominator = initialShares ? (initialAssets * WAD) / initialShares : WAD;

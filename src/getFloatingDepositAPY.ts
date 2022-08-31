@@ -7,9 +7,8 @@ import {
 import type {
   FixedPool, FloatingDebtState, InterestRateModel, MarketState, State,
 } from './floatingAPY';
-import SUBGRAPH_URL from './SUBGRAPH_URL';
 
-export default async (market: string, maxFuturePools = 3) => {
+export default async (market: string, subgraph: string, maxFuturePools = 3) => {
   const timeWindow = {
     start: Math.floor(Date.now() / 1_000) - 3_600,
     end: Math.floor(Date.now() / 1_000),
@@ -25,7 +24,7 @@ export default async (market: string, maxFuturePools = 3) => {
     interestRateModel: [interestRateModel],
     treasuryFeeRate: [{ treasuryFeeRate }],
     ...allMaturities
-  } = await request(SUBGRAPH_URL, `
+  } = await request(subgraph, `
     query(
       $market: Bytes
       $start: Int

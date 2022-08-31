@@ -4,9 +4,8 @@ import type { FloatingDebtState, InterestRateModel, MarketState } from './floati
 import {
   DEFAULT_MARKET_STATE, DEFAULT_FLOATING_DEBT_STATE, totalFloatingBorrowAssets, WAD,
 } from './floatingAPY';
-import SUBGRAPH_URL from './SUBGRAPH_URL';
 
-export default async (market: string) => {
+export default async (market: string, subgraph: string) => {
   const timeWindow = {
     start: Math.floor(Date.now() / 1_000) - 3_600,
     end: Math.floor(Date.now() / 1_000),
@@ -17,7 +16,7 @@ export default async (market: string) => {
     initialDebtUpdate: [initialDebtUpdate = DEFAULT_FLOATING_DEBT_STATE],
     finalDebtUpdate: [finalDebtUpdate = initialDebtUpdate],
     interestRateModel: [interestRateModel],
-  } = await request(SUBGRAPH_URL, `
+  } = await request(subgraph, `
     query(
       $market: Bytes
       $start: Int

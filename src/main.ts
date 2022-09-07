@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { env } from 'process';
-import getFloatingBorrowAPY from './getFloatingBorrowAPY';
-import getFloatingDepositAPY from './getFloatingDepositAPY';
+import queryRates from './queryRates';
 
 const {
   MARKET,
@@ -9,6 +8,11 @@ const {
 } = env;
 
 Promise.all([
-  getFloatingDepositAPY(MARKET, SUBGRAPH_URL),
-  getFloatingBorrowAPY(MARKET, SUBGRAPH_URL),
+  queryRates(SUBGRAPH_URL, MARKET, 'deposit', { maxFuturePools: 3 }),
+  queryRates(SUBGRAPH_URL, MARKET, 'borrow'),
+
+  queryRates(SUBGRAPH_URL, MARKET, 'deposit', {
+    maxFuturePools: 3, interval: 24 * 3_600, count: 25, roundTicks: true,
+  }),
+  queryRates(SUBGRAPH_URL, MARKET, 'borrow', { interval: 24 * 3_600, count: 20, roundTicks: true }),
 ]).then(console.log);

@@ -169,7 +169,7 @@ export default async (
           treasuryFeeRate
         }
 
-        ${[...new Array(maxFuturePools + 1)]
+        ${[...new Array(maxFuturePools! + 1)]
     .map((__, j) => timestamp - (timestamp % FIXED_INTERVAL) + FIXED_INTERVAL * j)
     .map((maturity) => `
           ${key}_pool_${maturity}: fixedEarningsUpdates(
@@ -196,9 +196,9 @@ export default async (
     const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual;
     const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor;
     const treasuryFeeRate = response[`${key}_treasuryFeeRate`]?.[0]?.treasuryFeeRate;
-    const fixedPools = Object.entries(response)
-      .filter(([k, pools]: [string, unknown[]]) => pools.length && k.startsWith(`${key}_pool_`))
-      .map(([, [pool]]: [string, FixedPool[]]) => pool);
+    const fixedPools = Object.entries<FixedPool[]>(response)
+      .filter(([k, pools]) => pools.length && k.startsWith(`${key}_pool_`))
+      .map(([, [pool]]) => pool);
 
     return {
       timestamp,

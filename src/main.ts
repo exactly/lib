@@ -7,6 +7,8 @@ const {
   SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/exactly-protocol/exactly-rinkeby',
 } = env;
 
+if (!MARKET) throw new Error('missing market');
+
 Promise.all([
   queryRates(SUBGRAPH_URL, MARKET, 'deposit', { maxFuturePools: 3 }),
   queryRates(SUBGRAPH_URL, MARKET, 'borrow'),

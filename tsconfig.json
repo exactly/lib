@@ -2,6 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "es2020",
+    "strict": true,
     "noEmit": true
   },
   "include": ["src"]

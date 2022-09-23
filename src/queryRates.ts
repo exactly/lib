@@ -96,10 +96,17 @@ export default async (
     maxFuturePools,
     roundTicks = false,
     interval = 3_600,
+    offset = 0,
     count = 1,
-  }: { maxFuturePools?: number; roundTicks?: boolean; interval?: number; count?: number; } = {},
+  }: {
+    maxFuturePools?: number;
+    roundTicks?: boolean;
+    interval?: number;
+    offset?: number;
+    count?: number;
+  } = {},
 ) => {
-  const now = Math.floor(Date.now() / 1_000);
+  const now = Math.floor(Date.now() / 1_000) - offset * interval;
   const lastTimestamp = roundTicks ? now - (now % interval) : now;
   const response = await request(subgraph, `{${[...Array(count + 1)].map((_, i) => {
     const timestamp = lastTimestamp - interval * i;

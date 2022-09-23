@@ -46,7 +46,6 @@ const totalAssets = (
   interestRateModel: InterestRateModel,
   accumulatorAccrual: number,
   smoothFactor: string,
-  treasuryFeeRate: string,
   fixedPools: FixedPool[],
 ) => {
   const { floatingAssets, floatingDebt, earningsAccumulator } = marketState;
@@ -60,8 +59,10 @@ const totalAssets = (
     ) => (
       smartPoolEarnings
         + (maturity > lastAccrual
-          ? (BigInt(unassignedEarnings) * BigInt(timestamp - lastAccrual))
-            / BigInt(maturity - lastAccrual)
+          ? (timestamp < maturity
+            ? (BigInt(unassignedEarnings) * BigInt(timestamp - lastAccrual))
+              / BigInt(maturity - lastAccrual)
+            : BigInt(unassignedEarnings))
           : 0n)
     ), 0n)
 
@@ -69,10 +70,8 @@ const totalAssets = (
       && (BigInt(earningsAccumulator) * elapsed)
         / (elapsed + (BigInt(smoothFactor) * BigInt(fixedPools.length * FIXED_INTERVAL)) / WAD))
 
-    + ((
-      totalFloatingBorrowAssets(timestamp, marketState, floatingDebtState, interestRateModel)
-        - BigInt(floatingDebt)
-    ) * (WAD - BigInt(treasuryFeeRate))) / WAD
+    + totalFloatingBorrowAssets(timestamp, marketState, floatingDebtState, interestRateModel)
+      - BigInt(floatingDebt)
   );
 };
 
@@ -160,17 +159,8 @@ export default async (
           smoothFactor: earningsAccumulatorSmoothFactor
         }
 
-        ${key}_treasuryFeeRate: treasurySets(
-          first: 1
-          orderBy: timestamp
-          orderDirection: desc
-          where: { market: "${market}", timestamp_lte: ${timestamp} }
-        ) {
-          treasuryFeeRate
-        }
-
         ${[...new Array(maxFuturePools! + 1)]
-    .map((__, j) => timestamp - (timestamp % FIXED_INTERVAL) + FIXED_INTERVAL * j)
+    .map((__, j) => timestamp - (timestamp % FIXED_INTERVAL) + j * FIXED_INTERVAL)
     .map((maturity) => `
           ${key}_pool_${maturity}: fixedEarningsUpdates(
             first: 1
@@ -195,7 +185,6 @@ export default async (
     const interestRateModel = response[`${key}_interestRateModel`][0] as InterestRateModel;
     const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual;
     const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor;
-    const treasuryFeeRate = response[`${key}_treasuryFeeRate`]?.[0]?.treasuryFeeRate;
     const fixedPools = Object.entries<FixedPool[]>(response)
       .filter(([k, pools]) => pools.length && k.startsWith(`${key}_pool_`))
       .map(([, [pool]]) => pool);
@@ -218,7 +207,6 @@ export default async (
         interestRateModel,
         accumulatorAccrual,
         smoothFactor,
-        treasuryFeeRate,
         fixedPools,
       ),
     };

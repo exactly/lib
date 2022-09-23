@@ -11,6 +11,7 @@ module.exports = {
     'no-bitwise': 'off',
     'no-console': 'off',
     'no-param-reassign': 'off',
+    'no-nested-ternary': 'off',
     'eslint-comments/no-unused-disable': 'error',
   },
   overrides: [

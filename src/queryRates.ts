@@ -190,8 +190,8 @@ export default async (
     const marketState = response[`${key}_marketState`][0] as MarketState ?? DEFAULT_MARKET_STATE;
     const floatingDebtState = response[`${key}_floatingDebtState`][0] as FloatingDebtState ?? DEFAULT_FLOATING_DEBT_STATE;
     const interestRateModel = response[`${key}_interestRateModel`][0] as InterestRateModel;
-    const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual;
-    const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor;
+    const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual as number ?? 0;
+    const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor as string;
     const fixedPools = Object.entries<FixedPool[]>(response)
       .filter(([k, pools]) => pools.length && k.startsWith(`${key}_pool_`))
       .map(([, [pool]]) => pool);
@@ -222,11 +222,12 @@ export default async (
   return states.slice(1).map(({
     timestamp, utilization, shares, assets,
   }, i) => {
-    const denominator = states[i].shares ? (states[i].assets * WAD) / states[i].shares : WAD;
-    const result = (((assets * WAD) / shares) * WAD) / denominator;
+    const prevShareValue = states[i].shares ? (states[i].assets * WAD) / states[i].shares : WAD;
+    const shareValue = shares ? (assets * WAD) / shares : WAD;
+    const proportion = (shareValue * WAD) / prevShareValue;
     return {
       date: new Date(timestamp * 1_000),
-      rate: Number(formatFixed(result, 18)) ** (31_536_000 / interval) - 1,
+      rate: Number(formatFixed(proportion, 18)) ** (31_536_000 / interval) - 1,
       utilization: Number(formatFixed(utilization, 18)),
     };
   });

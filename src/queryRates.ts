@@ -29,11 +29,11 @@ const totalFloatingBorrowAssets = (
   const newUtilization = BigInt(floatingAssets) > 0n
     ? (BigInt(floatingDebt) * WAD) / BigInt(floatingAssets)
     : 0n;
-  const borrowRate = interestRateModel && BigInt(interestRateModel.floatingCurveA) ? floatingRate(
+  const borrowRate = floatingRate(
     interestRateModel,
     min(BigInt(utilization), newUtilization),
     max(BigInt(utilization), newUtilization),
-  ) : 0n;
+  );
   return BigInt(floatingDebt)
     + (BigInt(floatingDebt) * ((borrowRate * BigInt(timestamp - debtUpdate)) / 31_536_000n))
       / WAD;
@@ -77,19 +77,6 @@ const totalAssets = (
     ) * (WAD - BigInt(treasuryFeeRate))) / WAD
   );
 };
-
-const DEFAULT_STATE = { timestamp: 0 };
-
-const DEFAULT_MARKET_STATE = {
-  ...DEFAULT_STATE,
-  floatingDepositShares: '0',
-  floatingAssets: '0',
-  floatingBorrowShares: '0',
-  floatingDebt: '0',
-  earningsAccumulator: '0',
-};
-
-const DEFAULT_FLOATING_DEBT_STATE = { ...DEFAULT_STATE, utilization: '0' };
 
 export default async (
   subgraph: string,
@@ -199,37 +186,39 @@ export default async (
   const states = [...Array(count + 1)].map((_, i) => {
     const timestamp = lastTimestamp - (count - i) * interval;
     const key = `k_${market}_${timestamp}`;
-    const marketState = response[`${key}_marketState`][0] as MarketState ?? DEFAULT_MARKET_STATE;
-    const floatingDebtState = response[`${key}_floatingDebtState`][0] as FloatingDebtState ?? DEFAULT_FLOATING_DEBT_STATE;
+    const marketState = response[`${key}_marketState`][0] as MarketState;
+    const floatingDebtState = response[`${key}_floatingDebtState`][0] as FloatingDebtState;
     const interestRateModel = response[`${key}_interestRateModel`][0] as InterestRateModel;
-    const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual as number ?? 0;
+    const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual as number;
     const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor as string;
-    const treasuryFeeRate = response[`${key}_treasuryFeeRate`]?.[0]?.treasuryFeeRate as string;
+    const treasuryFeeRate = response[`${key}_treasuryFeeRate`]?.[0]?.treasuryFeeRate as string ?? '0';
     const fixedPools = Object.entries<FixedPool[]>(response)
       .filter(([k, pools]) => pools.length && k.startsWith(`${key}_pool_`))
       .map(([, [pool]]) => pool);
 
     return {
       timestamp,
-      utilization: BigInt(marketState.floatingAssets)
-        && (BigInt(marketState.floatingDebt) * WAD) / BigInt(marketState.floatingAssets),
-      shares: BigInt({
-        deposit: marketState.floatingDepositShares,
-        borrow: marketState.floatingBorrowShares,
-      }[type]),
-      assets: {
-        deposit: totalAssets,
-        borrow: totalFloatingBorrowAssets,
-      }[type](
-        timestamp,
-        marketState,
-        floatingDebtState,
-        interestRateModel,
-        accumulatorAccrual,
-        smoothFactor,
-        treasuryFeeRate,
-        fixedPools,
-      ),
+      ...marketState ? {
+        utilization: BigInt(marketState.floatingAssets)
+          && (BigInt(marketState.floatingDebt) * WAD) / BigInt(marketState.floatingAssets),
+        shares: BigInt({
+          deposit: marketState.floatingDepositShares,
+          borrow: marketState.floatingBorrowShares,
+        }[type]),
+        assets: {
+          deposit: totalAssets,
+          borrow: totalFloatingBorrowAssets,
+        }[type](
+          timestamp,
+          marketState,
+          floatingDebtState,
+          interestRateModel,
+          accumulatorAccrual,
+          smoothFactor,
+          treasuryFeeRate,
+          fixedPools,
+        ),
+      } : { utilization: 0n, shares: 0n, assets: 0n },
     };
   });
 

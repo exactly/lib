@@ -4,7 +4,7 @@ import queryRates from './queryRates';
 
 const {
   MARKET,
-  SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/exactly-protocol/exactly-rinkeby',
+  SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/exactly-protocol/exactly-goerli',
 } = env;
 
 if (!MARKET) throw new Error('missing market');

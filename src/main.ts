@@ -9,6 +9,8 @@ const {
 
 if (!MARKET) throw new Error('missing market');
 
+console.log(MARKET);
+
 Promise.all([
   queryRates(SUBGRAPH_URL, MARKET, 'deposit', { maxFuturePools: 3 }),
   queryRates(SUBGRAPH_URL, MARKET, 'borrow'),
@@ -17,4 +19,4 @@ Promise.all([
     maxFuturePools: 3, interval: 24 * 3_600, count: 32, roundTicks: true,
   }),
   queryRates(SUBGRAPH_URL, MARKET, 'borrow', { count: 24, roundTicks: true }),
-]).then(console.log);
+]).then((results) => results.forEach((result) => console.dir(result, { depth: null })));

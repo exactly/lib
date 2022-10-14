@@ -3,22 +3,29 @@ import { formatFixed } from '@ethersproject/bignumber';
 import { lnWad, WAD } from './FixedPointMathLib';
 
 const FIXED_INTERVAL = 86_400 * 7 * 4;
+const PRECISION_THRESHOLD = 75n * (10n ** 13n);
 
 const min = (a: bigint, b: bigint) => (a < b ? a : b);
 const max = (a: bigint, b: bigint) => (a > b ? a : b);
 
 const floatingRate = (
-  { floatingCurveA, floatingCurveB, floatingMaxUtilization }: InterestRateModel,
+  interestRateModel: InterestRateModel,
   utilizationBefore: bigint,
   utilizationAfter: bigint,
-) => (
-  utilizationAfter - utilizationBefore < 2_500_000_000n
-    ? (BigInt(floatingCurveA) * WAD) / (BigInt(floatingMaxUtilization) - utilizationBefore)
-    : (BigInt(floatingCurveA) * lnWad(
-      ((BigInt(floatingMaxUtilization) - utilizationBefore) * WAD)
-        / (BigInt(floatingMaxUtilization) - utilizationAfter),
-    )) / (utilizationAfter - utilizationBefore)
-) + BigInt(floatingCurveB);
+) => {
+  const curveA = BigInt(interestRateModel.floatingCurveA);
+  const curveB = BigInt(interestRateModel.floatingCurveB);
+  const maxUtilization = BigInt(interestRateModel.floatingMaxUtilization);
+  const alpha = maxUtilization - utilizationBefore;
+  const delta = utilizationAfter - utilizationBefore;
+
+  return ((delta * WAD) / alpha < PRECISION_THRESHOLD
+    ? ((curveA * WAD) / alpha
+      + (curveA * 4n * WAD) / (maxUtilization - ((utilizationAfter + utilizationBefore) / 2n))
+      + (curveA * WAD) / (maxUtilization - utilizationAfter)) / 6n
+    : (curveA * lnWad((alpha * WAD) / (maxUtilization - utilizationAfter))) / delta
+  ) + curveB;
+};
 
 const totalFloatingBorrowAssets = (
   timestamp: number,

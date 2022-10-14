@@ -3,7 +3,7 @@ import { formatFixed } from '@ethersproject/bignumber';
 import { lnWad, WAD } from './FixedPointMathLib';
 
 const FIXED_INTERVAL = 86_400 * 7 * 4;
-const PRECISION_THRESHOLD = 75n * (10n ** 13n);
+const PRECISION_THRESHOLD = 750_000_000_000_000n;
 
 const min = (a: bigint, b: bigint) => (a < b ? a : b);
 const max = (a: bigint, b: bigint) => (a > b ? a : b);

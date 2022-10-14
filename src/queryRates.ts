@@ -57,11 +57,12 @@ const totalAssets = (
   fixedPools: FixedPool[],
 ) => {
   const { floatingAssets, floatingDebt, earningsAccumulator } = marketState;
+  const maxFuturePools = fixedPools.length - 1;
   const elapsed = BigInt(timestamp - accumulatorAccrual);
   return (
     BigInt(floatingAssets)
 
-    + fixedPools.reduce((
+    + fixedPools.filter(Boolean).reduce((
       smartPoolEarnings,
       { timestamp: lastAccrual, maturity, unassignedEarnings },
     ) => (
@@ -76,7 +77,7 @@ const totalAssets = (
 
     + (elapsed
       && (BigInt(earningsAccumulator) * elapsed)
-        / (elapsed + (BigInt(smoothFactor) * BigInt(fixedPools.length * FIXED_INTERVAL)) / WAD))
+        / (elapsed + (BigInt(smoothFactor) * BigInt(maxFuturePools * FIXED_INTERVAL)) / WAD))
 
     + ((
       totalFloatingBorrowAssets(timestamp, marketState, floatingDebtState, interestRateModel)
@@ -179,7 +180,7 @@ export default async (
             first: 1
             orderBy: timestamp
             orderDirection: desc
-            where: { market: "${market}", maturity: ${maturity}, timestamp_lte: ${timestamp} }
+            where: { market: "${market}", timestamp_lte: ${timestamp}, maturity: ${maturity} }
           ) {
             timestamp
             maturity
@@ -199,9 +200,9 @@ export default async (
     const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual as number;
     const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor as string;
     const treasuryFeeRate = response[`${key}_treasuryFeeRate`]?.[0]?.treasuryFeeRate as string ?? '0';
-    const fixedPools = Object.entries<FixedPool[]>(response)
-      .filter(([k, pools]) => pools.length && k.startsWith(`${key}_pool_`))
-      .map(([, [pool]]) => pool);
+    const fixedPools = [...new Array(type === 'deposit' ? maxFuturePools! + 1 : 0)]
+      .map((__, j) => timestamp - (timestamp % FIXED_INTERVAL) + j * FIXED_INTERVAL)
+      .map((maturity) => response[`${key}_pool_${maturity}`]?.[0] as FixedPool);
 
     return {
       timestamp,

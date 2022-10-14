@@ -239,6 +239,7 @@ export default async (
     return {
       date: new Date(timestamp * 1_000),
       apr: (Number(formatFixed(proportion, 18)) - 1) * (31_536_000 / interval),
+      apy: Number(formatFixed(proportion, 18)) ** (31_536_000 / interval) - 1,
       utilization: Number(formatFixed(utilization, 18)),
     };
   });

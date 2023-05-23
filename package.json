@@ -1,6 +1,8 @@
 {
-  "name": "@exactly-protocol/querido",
+  "name": "@exactly/lib",
   "version": "0.0.1",
+  "homepage": "https://exact.ly",
+  "repository": "github:exactly/lib",
   "scripts": {
     "lint": "eslint --ext .ts,.js ."
   },

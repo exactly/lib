@@ -1,6 +1,6 @@
 import request from 'graphql-request';
+import WAD from './WAD';
 
-const WAD = 1_000_000_000_000_000_000n;
 const FIXED_INTERVAL = 4 * 7 * 86_400;
 
 const floatingRate = (interestRateModel: InterestRateModel, utilization: bigint) => {

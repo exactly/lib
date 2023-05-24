@@ -1,45 +1,25 @@
 import request from 'graphql-request';
-import { lnWad, WAD } from './FixedPointMathLib';
 
-const FIXED_INTERVAL = 86_400 * 7 * 4;
-const PRECISION_THRESHOLD = 750_000_000_000_000n;
+const WAD = 1_000_000_000_000_000_000n;
+const FIXED_INTERVAL = 4 * 7 * 86_400;
 
-const min = (a: bigint, b: bigint) => (a < b ? a : b);
-const max = (a: bigint, b: bigint) => (a > b ? a : b);
-
-const floatingRate = (
-  interestRateModel: InterestRateModel,
-  utilizationBefore: bigint,
-  utilizationAfter: bigint,
-) => {
+const floatingRate = (interestRateModel: InterestRateModel, utilization: bigint) => {
   const curveA = BigInt(interestRateModel.floatingCurveA);
   const curveB = BigInt(interestRateModel.floatingCurveB);
   const maxUtilization = BigInt(interestRateModel.floatingMaxUtilization);
-  const alpha = maxUtilization - utilizationBefore;
-  const delta = utilizationAfter - utilizationBefore;
-
-  return ((delta * WAD) / alpha < PRECISION_THRESHOLD
-    ? ((curveA * WAD) / alpha
-      + (curveA * 4n * WAD) / (maxUtilization - ((utilizationAfter + utilizationBefore) / 2n))
-      + (curveA * WAD) / (maxUtilization - utilizationAfter)) / 6n
-    : (curveA * lnWad((alpha * WAD) / (maxUtilization - utilizationAfter))) / delta
-  ) + curveB;
+  return (curveA * WAD) / (maxUtilization - utilization) + curveB;
 };
 
 const totalFloatingBorrowAssets = (
   timestamp: number,
   { floatingAssets, floatingDebt }: MarketState,
-  { timestamp: debtUpdate, utilization }: FloatingDebtState,
+  { timestamp: debtUpdate }: State,
   interestRateModel: InterestRateModel,
 ) => {
-  const newUtilization = BigInt(floatingAssets) > 0n
+  const utilization = BigInt(floatingAssets) > 0n
     ? (BigInt(floatingDebt) * WAD) / BigInt(floatingAssets)
     : 0n;
-  const borrowRate = floatingRate(
-    interestRateModel,
-    min(BigInt(utilization), newUtilization),
-    max(BigInt(utilization), newUtilization),
-  );
+  const borrowRate = floatingRate(interestRateModel, utilization);
   return BigInt(floatingDebt)
     + (BigInt(floatingDebt) * ((borrowRate * BigInt(timestamp - debtUpdate)) / 31_536_000n))
       / WAD;
@@ -48,7 +28,7 @@ const totalFloatingBorrowAssets = (
 const totalAssets = (
   timestamp: number,
   marketState: MarketState,
-  floatingDebtState: FloatingDebtState,
+  floatingDebtState: State,
   interestRateModel: InterestRateModel,
   accumulatorAccrual: number,
   smoothFactor: string,
@@ -130,7 +110,6 @@ export default async (
         where: { market: "${market}", timestamp_lte: ${timestamp} }
       ) {
         timestamp
-        utilization
       }
 
       ${key}_interestRateModel: interestRateModelSets(
@@ -194,7 +173,7 @@ export default async (
     const timestamp = lastTimestamp - (count - i) * interval;
     const key = `k_${market}_${timestamp}`;
     const marketState = response[`${key}_marketState`][0] as MarketState;
-    const floatingDebtState = response[`${key}_floatingDebtState`][0] as FloatingDebtState;
+    const floatingDebtState = response[`${key}_floatingDebtState`][0] as State | undefined;
     const interestRateModel = response[`${key}_interestRateModel`][0] as InterestRateModel;
     const accumulatorAccrual = response[`${key}_accumulatorAccrual`]?.[0]?.accumulatorAccrual as number;
     const smoothFactor = response[`${key}_smoothFactor`]?.[0]?.smoothFactor as string;
@@ -218,7 +197,7 @@ export default async (
         }[type](
           timestamp,
           marketState,
-          floatingDebtState,
+          floatingDebtState ?? { timestamp: 0 },
           interestRateModel,
           accumulatorAccrual,
           smoothFactor,
@@ -254,10 +233,6 @@ interface MarketState extends State {
   floatingBorrowShares: string;
   floatingDebt: string;
   earningsAccumulator: string;
-}
-
-interface FloatingDebtState extends State {
-  utilization: string;
 }
 
 interface FixedPool extends State {

@@ -4,7 +4,26 @@
   "homepage": "https://exact.ly",
   "repository": "github:exactly/lib",
   "scripts": {
+    "prepare": "run-s build:*",
+    "build:esm": "tsc && echo '{ \"type\": \"module\" }' > esm/package.json",
+    "build:cjs": "tsc --module commonjs --outDir cjs && echo '{ \"type\": \"commonjs\" }' > cjs/package.json",
+    "build:types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir types",
     "lint": "eslint --ext .ts,.js ."
+  },
+  "type": "module",
+  "files": [
+    "esm",
+    "cjs",
+    "types",
+    "src"
+  ],
+  "exports": {
+    "./*": {
+      "types": "./types/*.d.ts",
+      "require": "./cjs/*.js",
+      "import": "./esm/*.js",
+      "default": "./esm/*.js"
+    }
   },
   "engines": {
     "node": ">=14"
@@ -26,6 +45,7 @@
     "eslint-plugin-node": "^11.1.0",
     "graphql": "^16.6.0",
     "graphql-request": "^6.1.0",
+    "npm-run-all": "^4.1.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   }

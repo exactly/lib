@@ -26,12 +26,15 @@ const responseToMarketState = ({
   lastFloatingDebtUpdate,
   fixedPools: fixedPools ? fixedPools.map(({
     id: poolId, timestamp: poolTimestamp, maturity, unassignedEarnings, lastAccrual,
+    borrowed, supplied,
   }) => ({
     id: poolId,
     maturity,
     timestamp: poolTimestamp,
     unassignedEarnings: BigInt(unassignedEarnings),
     lastAccrual,
+    borrowed: BigInt(borrowed),
+    supplied: BigInt(supplied),
   })) : null,
 });
 
@@ -49,6 +52,7 @@ const query = (timestamp: number | null, market: string): string => `
       id
       market {
         id
+        decimals
       }
       timestamp
       floatingAssets
@@ -81,7 +85,7 @@ export default async (
   timestamp: number,
   market: string,
   subgraph: string,
-): Promise<MarketState> => {
+) => {
   const { marketStates } = await request<{ marketStates: MarketStateResponse[] }>(
     subgraph,
     query(timestamp, market),

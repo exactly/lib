@@ -2,9 +2,9 @@ import { WAD } from './FixedPointMathLib';
 import { ONE_YEAR_IN_S } from './shareValueProportion';
 import { MarketState } from './types';
 
-export const marketStateUtilization = (
+export const utilization = (
   { floatingDebt, floatingAssets }: MarketState,
-): bigint => {
+) => {
   if (floatingAssets === 0n) return 0n;
 
   return (floatingDebt * WAD) / (floatingAssets);

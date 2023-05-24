@@ -10,6 +10,7 @@ export type MarketStateResponse = {
   timestamp: number
   market: {
     id: string
+    decimals: number
   }
   floatingAssets: string
   totalFloatingBorrowShares: string
@@ -32,6 +33,7 @@ export type MarketState = {
   timestamp: number
   market: {
     id: string
+    decimals: number
   }
   floatingAssets: bigint
   totalFloatingBorrowShares: bigint
@@ -60,6 +62,8 @@ export type FixedPoolState = {
   timestamp:number
   unassignedEarnings: bigint
   lastAccrual: number
+  borrowed: bigint
+  supplied: bigint
 };
 
 export type InterestRateModel = Pick<MarketState,

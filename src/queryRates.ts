@@ -1,7 +1,7 @@
-import { Rate } from './types';
 import fetchMarketState from './fetchMarketState';
 import shareValueProportion from './shareValueProportion';
-import { apr, apy, marketStateUtilization } from './utils';
+import { Rate } from './types';
+import { apr, apy, utilization } from './utils';
 
 const rate = async (
   subgraph: string,
@@ -28,7 +28,7 @@ const rate = async (
     date: new Date(startTimestamp * 1_000),
     apr: apr(proportion, interval),
     apy: apy(proportion, interval),
-    utilization: Number(marketStateUtilization(currentMarketState)) / 1e18,
+    utilization: Number(utilization(currentMarketState)) / 1e18,
   };
 };
 

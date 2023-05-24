@@ -1,5 +1,4 @@
 import request from 'graphql-request';
-import { formatFixed } from '@ethersproject/bignumber';
 import { lnWad, WAD } from './FixedPointMathLib';
 
 const FIXED_INTERVAL = 86_400 * 7 * 4;
@@ -238,9 +237,9 @@ export default async (
     const proportion = (shareValue * WAD) / prevShareValue;
     return {
       date: new Date(timestamp * 1_000),
-      apr: (Number(formatFixed(proportion, 18)) - 1) * (31_536_000 / interval),
-      apy: Number(formatFixed(proportion, 18)) ** (31_536_000 / interval) - 1,
-      utilization: Number(formatFixed(utilization, 18)),
+      apr: (Number(proportion) / 1e18 - 1) * (31_536_000 / interval),
+      apy: (Number(proportion) / 1e18) ** (31_536_000 / interval) - 1,
+      utilization: Number(utilization) / 1e18,
     };
   });
 };

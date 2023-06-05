@@ -13,7 +13,7 @@ export const utilization = (
 export const apr = (
   proportion_: bigint,
   interval: number,
-) => ((Number(proportion_) / 1e18) - 1) * (ONE_YEAR_IN_S / interval);
+) => ((proportion_) - WAD) * BigInt(ONE_YEAR_IN_S / interval);
 
 export const apy = (
   proportion_: bigint,

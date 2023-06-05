@@ -26,7 +26,7 @@ const rate = async (
 
   return {
     date: new Date(startTimestamp * 1_000),
-    apr: apr(proportion, interval),
+    apr: Number(apr(proportion, interval)) / 1e18,
     apy: apy(proportion, interval),
     utilization: Number(utilization(currentMarketState)) / 1e18,
   };
@@ -47,7 +47,7 @@ export default async (
     offset?: number,
     count?: number,
   } = {},
-): Promise<Rate[]> => {
+) => {
   const now = Math.floor(Date.now() / 1_000) - offset * interval;
   const lastTimestamp = roundTicks ? now - (now % interval) : now;
   const timestamps = Array

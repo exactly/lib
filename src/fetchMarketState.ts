@@ -53,6 +53,7 @@ const query = (timestamp: number | null, market: string): string => `
       market {
         id
         decimals
+        asset
       }
       timestamp
       floatingAssets

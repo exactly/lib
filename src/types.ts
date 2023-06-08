@@ -5,13 +5,17 @@ export type Rate = {
   utilization: number;
 };
 
+export type Market = {
+  id: string
+  decimals: number
+  asset: string
+  rewardAsset: string
+};
+
 export type MarketStateResponse = {
   id: string
   timestamp: number
-  market: {
-    id: string
-    decimals: number
-  }
+  market: Market
   floatingAssets: string
   totalFloatingBorrowShares: string
   floatingDebt: string
@@ -26,15 +30,13 @@ export type MarketStateResponse = {
   fixedPools: FixedPoolState[] | null
   totalSupply: string
   lastFloatingDebtUpdate: number
+  rewardAsset: string
 };
 
 export type MarketState = {
   id: string
   timestamp: number
-  market: {
-    id: string
-    decimals: number
-  }
+  market: Market
   floatingAssets: bigint
   totalFloatingBorrowShares: bigint
   floatingDebt: bigint
@@ -59,15 +61,12 @@ export type FloatingDebtState = {
 export type FixedPoolState = {
   id: string
   maturity: number
-  timestamp:number
+  timestamp: number
   unassignedEarnings: bigint
   lastAccrual: number
   borrowed: bigint
   supplied: bigint
 };
 
-export type InterestRateModel = Pick<MarketState,
-| 'floatingCurveA'
-| 'floatingCurveB'
-| 'floatingMaxUtilization'
+export type InterestRateModel = Pick<MarketState, 'floatingCurveA' | 'floatingCurveB' | 'floatingMaxUtilization'
 >;

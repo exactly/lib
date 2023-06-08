@@ -1,4 +1,5 @@
 import request from 'graphql-request';
+import { Market } from './types';
 
 type AccountResponse = {
   depositShares: string
@@ -15,12 +16,6 @@ type FixedPositionResponse = {
   borrow: boolean
   maturity: number
   rate: string
-};
-
-type Market = {
-  id: string
-  asset: string
-  decimals: number
 };
 
 const mapAccountsResponse = (response: AccountResponse[], address: string, markets: Market[]) => (

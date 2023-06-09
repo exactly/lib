@@ -22,7 +22,7 @@ export default async (subgraph: string) => {
   );
 
   return {
-    outstandingBorrows: Object.fromEntries(
+    totalBorrows: Object.fromEntries(
       marketStates.map((ms) => [
         ms.market.id,
         Number(

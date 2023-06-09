@@ -7,12 +7,12 @@ export default (
   assetPrices: Record<string, number>,
 ) => (
   accounts.reduce(
-    (acc, account) => {
+    (total, account) => {
       const {
         borrowShares, depositShares, market: { decimals, asset }, fixedPositions,
       } = account;
 
-      const fixedShares = fixedPositions.reduce((
+      const fixedPosition = fixedPositions.reduce((
         fixedAcc,
         {
           principal, borrow, maturity,
@@ -21,11 +21,11 @@ export default (
         maturity > timestamp ? fixedAcc + (borrow ? -1n : 1n) * principal : fixedAcc
       ), 0n);
 
-      const weight = (((depositShares - borrowShares + fixedShares
+      const weight = (((depositShares - borrowShares + fixedPosition
       ) * WAD) / BigInt(10 ** decimals))
         * BigInt(assetPrices[asset]);
 
-      return acc + weight;
+      return total + weight;
     },
     0n,
   ));

@@ -41,7 +41,7 @@ export default async (
 
   if (!isActive) return { deposit: 0n, borrow: 0n };
 
-  const rewardUsd = BigInt(assetPrices[reward] * 1e18);
+  const rewardUSD = BigInt(assetPrices[reward] * 1e18);
   const usdUnitPrice = BigInt(assetPrices[asset] * 1e18);
 
   const baseUnit = BigInt(10 ** prevMarketState.market.decimals);
@@ -54,13 +54,13 @@ export default async (
   const borrowProportion = (((((
     borrowIndexDiff * (totalFloatingBorrowShares + previewRepayResult))
     / baseUnit)
-    * rewardUsd)
+    * rewardUSD)
     / WAD)
     * baseUnit)
     / (((floatingBorrowAssets + fixedDebt) * usdUnitPrice) / WAD);
 
   const depositIndexDiff = currIndex.depositIndex - prevIndex.depositIndex;
-  const depositProportion = (((depositIndexDiff * (totalSupply / baseUnit) * rewardUsd) / WAD)
+  const depositProportion = (((depositIndexDiff * (totalSupply / baseUnit) * rewardUSD) / WAD)
     * baseUnit) / ((totalAssets * usdUnitPrice) / WAD);
 
   return {

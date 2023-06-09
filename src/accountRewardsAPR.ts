@@ -1,5 +1,5 @@
 import { WAD } from './FixedPointMathLib';
-import accountValue from './accountValue';
+import accountsWorth from './accountsWorth';
 import fetchAccounts from './fetchAccounts';
 import rewardsAPR from './rewardsAPR';
 
@@ -19,10 +19,8 @@ const fixedRewardsAPRWeighted = (
   positions?.reduce(
     (acc, {
       principal, borrow, maturity,
-    }) => (maturity > timestamp && borrow
-      ? acc
-      + principal
-      * borrowRewardAPR
+    }) => (maturity >= timestamp && borrow
+      ? acc + principal * borrowRewardAPR
       : 0n),
     0n,
   ) ?? 0n);
@@ -36,7 +34,7 @@ export default async (
   const timestamp = Math.floor(Date.now() / 1_000);
 
   const totalWeightedAPR = await accounts.reduce(async (
-    acc,
+    total,
     account,
   ) => {
     const {
@@ -56,20 +54,20 @@ export default async (
     if (!assetPrice) throw new Error(`missing price for ${asset}`);
 
     const floatingAPRWeighted = depositRewardAPR * depositShares
-      - borrowRewardAPR * borrowShares;
+      + borrowRewardAPR * borrowShares;
 
     const weightedAPR = (
       (floatingAPRWeighted + fixedRewardsAPRWeighted(fixedPositions, timestamp, depositRewardAPR))
       * BigInt(assetPrice))
       / BigInt(10 ** decimals);
 
-    return (await acc) + weightedAPR;
+    return (await total) + weightedAPR;
   }, Promise.resolve(0n));
 
-  const weight = accountValue(accounts, timestamp, assetPrices);
+  const total = accountsWorth(accounts, timestamp, assetPrices);
 
-  if (weight === 0n) return 0n;
-  const weightedAverageAPR = (totalWeightedAPR * WAD) / weight;
+  if (total === 0n) return 0n;
+  const weightedAverageAPR = (totalWeightedAPR * WAD) / total;
 
   return Number(weightedAverageAPR) / 1e18;
 };

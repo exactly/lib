@@ -1,5 +1,5 @@
 import { WAD } from './FixedPointMathLib';
-import accountValue from './accountValue';
+import accountsWorth from './accountsWorth';
 import fetchAccounts from './fetchAccounts';
 import fetchMarketState from './fetchMarketState';
 import shareValueProportion from './shareValueProportion';
@@ -15,13 +15,10 @@ type FixedPosition = {
 
 const fixedAPRWeighted = (positions: FixedPosition[], timestamp: number) => (
   positions?.reduce(
-    (fixedAcc, {
+    (fixedTotal, {
       principal, borrow, maturity, rate,
     }) => (maturity > timestamp
-      ? fixedAcc
-      + principal
-      * rate
-      * (borrow ? -1n : 1n)
+      ? fixedTotal + principal * rate * (borrow ? -1n : 1n)
       : 0n),
     0n,
   ) ?? 0n);
@@ -64,7 +61,7 @@ export default async (
   const timestamp = Math.floor(Date.now() / 1_000);
 
   const totalWeightedAPR = await accounts.reduce(async (
-    acc,
+    total,
     account,
   ) => {
     const {
@@ -90,10 +87,10 @@ export default async (
       (floatingAPRWeighted + fixedAPRWeighted(fixedPositions, timestamp)) * BigInt(assetPrice))
       / BigInt(10 ** decimals);
 
-    return (await acc) + weightedAPR;
+    return (await total) + weightedAPR;
   }, Promise.resolve(0n));
 
-  const weight = accountValue(accounts, timestamp, assetPrices);
+  const weight = accountsWorth(accounts, timestamp, assetPrices);
 
   if (weight === 0n) return 0n;
   const weightedAverageAPR = (totalWeightedAPR * WAD) / weight;

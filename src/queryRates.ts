@@ -8,10 +8,10 @@ const rate = async (
   market: string,
   type: 'deposit' | 'borrow',
   interval: number,
-  startTimestamp: number,
+  endTimestamp: number,
 ): Promise<Rate> => {
   const [currentMarketState, previousMarketState] = await Promise.all(
-    [startTimestamp, startTimestamp - interval].map(
+    [endTimestamp, endTimestamp - interval].map(
       (timestamp) => fetchMarketState(timestamp, market, subgraph),
     ),
   );
@@ -20,12 +20,12 @@ const rate = async (
     currentMarketState,
     previousMarketState,
     type,
-    startTimestamp,
+    endTimestamp,
     interval,
   );
 
   return {
-    date: new Date(startTimestamp * 1_000),
+    date: new Date(endTimestamp * 1_000),
     apr: Number(apr(proportion, interval)) / 1e18,
     apy: apy(proportion, interval),
     utilization: Number(utilization(currentMarketState)) / 1e18,

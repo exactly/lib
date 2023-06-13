@@ -3,7 +3,7 @@ import fetchDistributionSets from './fetchDistributionSets';
 import fetchMarketState from './fetchMarketState';
 import fetchRewardsIndexUpdate from './fetchRewardsIndexUpdates';
 import { ONE_YEAR_IN_S, totalAssets as getTotalAssets, totalFloatingBorrowAssets } from './shareValueProportion';
-import { MarketState } from './types';
+import { Asset, MarketState } from './types';
 
 const previewRepay = (assets: bigint, marketState: MarketState, timestamp: number) => (
   marketState.totalFloatingBorrowShares === 0n
@@ -15,7 +15,7 @@ export default async (
   timestamp: number,
   subgraph: string,
   market: string,
-  assetPrices: Record<string, number>,
+  assets: Record<string, Asset>,
 ) => {
   const rewardIndices = await fetchRewardsIndexUpdate(timestamp, subgraph, market);
 
@@ -27,7 +27,7 @@ export default async (
   const {
     totalFloatingBorrowShares,
     totalSupply,
-    market: { asset },
+    market: { asset, decimals },
   } = prevMarketState;
 
   const fixedDebt = prevMarketState.fixedPools?.reduce((acc, { borrowed }) => (
@@ -41,27 +41,29 @@ export default async (
 
   if (!isActive) return { deposit: 0n, borrow: 0n };
 
-  const rewardUSD = BigInt(assetPrices[reward] * 1e18);
-  const usdUnitPrice = BigInt(assetPrices[asset] * 1e18);
+  const { price: rewardPrice, decimals: rewardDecimals } = assets[reward];
+  const { price: assetPrice, decimals: assetDecimals } = assets[asset];
 
-  const baseUnit = BigInt(10 ** prevMarketState.market.decimals);
+  const baseUnit = BigInt(10 ** decimals);
   const floatingBorrowAssets = totalFloatingBorrowAssets(currIndex.timestamp, prevMarketState);
   const totalAssets = getTotalAssets(currIndex.timestamp, prevMarketState);
   const realInteval = currIndex.timestamp - prevIndex.timestamp;
-  const borrowIndexDiff = currIndex.borrowIndex - prevIndex.borrowIndex;
   const previewRepayResult = previewRepay(fixedDebt, prevMarketState, prevIndex.timestamp);
 
   const borrowProportion = (((((
-    borrowIndexDiff * (totalFloatingBorrowShares + previewRepayResult))
+    (currIndex.borrowIndex - prevIndex.borrowIndex)
+    * (totalFloatingBorrowShares + previewRepayResult))
     / baseUnit)
-    * rewardUSD)
+    * ((rewardPrice * WAD) / BigInt(10 ** rewardDecimals)))
     / WAD)
     * baseUnit)
-    / (((floatingBorrowAssets + fixedDebt) * usdUnitPrice) / WAD);
+    / (((floatingBorrowAssets + fixedDebt)
+      * ((assetPrice * WAD) / BigInt(10 ** assetDecimals))) / WAD);
 
-  const depositIndexDiff = currIndex.depositIndex - prevIndex.depositIndex;
-  const depositProportion = (((depositIndexDiff * (totalSupply / baseUnit) * rewardUSD) / WAD)
-    * baseUnit) / ((totalAssets * usdUnitPrice) / WAD);
+  const depositProportion = (
+    (((currIndex.depositIndex - prevIndex.depositIndex)
+      * (totalSupply / baseUnit) * ((rewardPrice * WAD) / BigInt(10 ** rewardDecimals))) / WAD)
+    * baseUnit) / ((totalAssets * ((assetPrice * WAD) / BigInt(10 ** assetDecimals))) / WAD);
 
   return {
     deposit:

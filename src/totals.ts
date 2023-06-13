@@ -4,10 +4,10 @@ import { totalAssets, totalFloatingBorrowAssets } from './shareValueProportion';
 import { MarketState } from './types';
 
 const totalFixedDepositAssets = ({ fixedPools }: MarketState) => (
-  fixedPools?.reduce((acc, { supplied }) => acc + supplied, 0n) ?? 0n);
+  fixedPools?.reduce((total, { supplied }) => total + supplied, 0n) ?? 0n);
 
 const totalFixedBorrowAssets = ({ fixedPools }: MarketState) => (
-  fixedPools?.reduce((acc, { borrowed }) => acc + borrowed, 0n) ?? 0n);
+  fixedPools?.reduce((total, { borrowed }) => total + borrowed, 0n) ?? 0n);
 
 export default async (subgraph: string) => {
   const now = Math.floor(Date.now() / 1000);
@@ -22,7 +22,7 @@ export default async (subgraph: string) => {
   );
 
   return {
-    totalBorrows: Object.fromEntries(
+    borrows: Object.fromEntries(
       marketStates.map((ms) => [
         ms.market.id,
         Number(
@@ -31,7 +31,7 @@ export default async (subgraph: string) => {
         / 10 ** ms.market.decimals,
       ]),
     ),
-    totalDeposits: Object.fromEntries(
+    deposits: Object.fromEntries(
       marketStates.map((ms) => [
         ms.market.id,
         Number(

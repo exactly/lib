@@ -2,6 +2,7 @@ import { WAD } from './FixedPointMathLib';
 import accountsWorth from './accountsWorth';
 import fetchAccounts from './fetchAccounts';
 import rewardsAPR from './rewardsAPR';
+import { Asset } from './types';
 
 type FixedPosition = {
   principal: bigint
@@ -28,7 +29,7 @@ const fixedRewardsAPRWeighted = (
 export default async (
   address: string,
   subgraph: string,
-  assetPrices: Record<string, number>,
+  assets: Record<string, Asset>,
 ) => {
   const accounts = await fetchAccounts(subgraph, address);
   const timestamp = Math.floor(Date.now() / 1_000);
@@ -47,27 +48,26 @@ export default async (
     const {
       borrow: borrowRewardAPR,
       deposit: depositRewardAPR,
-    } = await rewardsAPR(timestamp, subgraph, market.id, assetPrices);
+    } = await rewardsAPR(timestamp, subgraph, market.id, assets);
 
     const { asset, decimals } = market;
-    const assetPrice = asset ? assetPrices[asset] : undefined;
-    if (!assetPrice) throw new Error(`missing price for ${asset}`);
+    const { price, decimals: assetDecimals } = assets[asset];
+    if (!price) throw new Error(`missing price for ${asset}`);
 
-    const floatingAPRWeighted = depositRewardAPR * depositShares
+    const floatingWeightedAPR = depositRewardAPR * depositShares
       + borrowRewardAPR * borrowShares;
 
     const weightedAPR = (
-      (floatingAPRWeighted + fixedRewardsAPRWeighted(fixedPositions, timestamp, depositRewardAPR))
-      * BigInt(assetPrice))
-      / BigInt(10 ** decimals);
+      (floatingWeightedAPR + fixedRewardsAPRWeighted(fixedPositions, timestamp, depositRewardAPR))
+      * ((price * WAD) / BigInt(10 ** assetDecimals)))
+      / (BigInt(10 ** decimals));
 
     return (await total) + weightedAPR;
   }, Promise.resolve(0n));
 
-  const total = accountsWorth(accounts, timestamp, assetPrices);
+  const total = accountsWorth(accounts, timestamp, assets);
 
   if (total === 0n) return 0n;
-  const weightedAverageAPR = (totalWeightedAPR * WAD) / total;
 
-  return Number(weightedAverageAPR) / 1e18;
+  return Number((totalWeightedAPR * WAD) / total) / 1e18;
 };

@@ -33,10 +33,10 @@ const floatingRate = (
 
 export const totalFloatingBorrowAssets = (timestamp: number, marketState: MarketState) => {
   const {
-    floatingAssets, floatingDebt,
+    floatingAssets, floatingDebt, lastFloatingDebtUpdate, floatingUtilization,
   } = marketState;
 
-  const utilization = marketState.floatingUtilization;
+  const utilization = floatingUtilization;
   const newUtilization = floatingAssets > 0n
     ? (floatingDebt * WAD) / floatingAssets
     : 0n;
@@ -48,7 +48,7 @@ export const totalFloatingBorrowAssets = (timestamp: number, marketState: Market
   );
 
   return floatingDebt
-    + (floatingDebt * ((borrowRate * BigInt(timestamp - marketState.lastFloatingDebtUpdate))
+    + (floatingDebt * ((borrowRate * BigInt(timestamp - lastFloatingDebtUpdate))
       / BigInt(ONE_YEAR_IN_S)))
     / WAD;
 };

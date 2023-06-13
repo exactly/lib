@@ -70,3 +70,8 @@ export type FixedPoolState = {
 
 export type InterestRateModel = Pick<MarketState, 'floatingCurveA' | 'floatingCurveB' | 'floatingMaxUtilization'
 >;
+
+export type Asset = {
+  price: bigint
+  decimals: number
+};

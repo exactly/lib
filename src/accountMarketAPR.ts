@@ -3,6 +3,7 @@ import accountsWorth from './accountsWorth';
 import fetchAccounts from './fetchAccounts';
 import fetchMarketState from './fetchMarketState';
 import shareValueProportion from './shareValueProportion';
+import { Asset } from './types';
 import { apr } from './utils';
 
 type FixedPosition = {
@@ -55,7 +56,7 @@ export default async (
   address: string,
   subgraph: string,
   interval: number,
-  assetPrices: Record<string, number>,
+  assets: Record<string, Asset>,
 ) => {
   const accounts = await fetchAccounts(subgraph, address);
   const timestamp = Math.floor(Date.now() / 1_000);
@@ -77,23 +78,23 @@ export default async (
     } = await floatingAPRs(market.id, timestamp, interval, subgraph);
 
     const { asset, decimals } = market;
-    const assetPrice = asset ? assetPrices[asset] : undefined;
-    if (!assetPrice) throw new Error(`missing price for ${asset}`);
+    const { decimals: assetDecimals, price } = assets[asset];
+    if (!price) throw new Error(`missing price for ${asset}`);
 
-    const floatingAPRWeighted = floatingDepositAPR * depositShares
+    const floatingWeightedAPR = floatingDepositAPR * depositShares
       - floatingBorrowAPR * borrowShares;
 
     const weightedAPR = (
-      (floatingAPRWeighted + fixedAPRWeighted(fixedPositions, timestamp)) * BigInt(assetPrice))
-      / BigInt(10 ** decimals);
+      (floatingWeightedAPR + fixedAPRWeighted(fixedPositions, timestamp))
+      * price)
+      / (BigInt(10 ** decimals) * BigInt(10 ** assetDecimals));
 
     return (await total) + weightedAPR;
   }, Promise.resolve(0n));
 
-  const weight = accountsWorth(accounts, timestamp, assetPrices);
+  const weight = accountsWorth(accounts, timestamp, assets);
 
   if (weight === 0n) return 0n;
-  const weightedAverageAPR = (totalWeightedAPR * WAD) / weight;
 
-  return Number(weightedAverageAPR) / 1e18;
+  return Number((totalWeightedAPR * WAD) / weight) / 1e18;
 };

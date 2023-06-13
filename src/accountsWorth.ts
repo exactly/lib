@@ -1,10 +1,11 @@
 import { WAD } from './FixedPointMathLib';
 import { Account } from './fetchAccounts';
+import { Asset } from './types';
 
 export default (
   accounts: Account[],
   timestamp: number,
-  assetPrices: Record<string, number>,
+  assets: Record<string, Asset>,
 ) => (
   accounts.reduce(
     (total, account) => {
@@ -21,9 +22,11 @@ export default (
         maturity > timestamp ? fixedAcc + (borrow ? -1n : 1n) * principal : fixedAcc
       ), 0n);
 
-      const weight = (((depositShares - borrowShares + fixedPosition
-      ) * WAD) / BigInt(10 ** decimals))
-        * BigInt(assetPrices[asset]);
+      const { decimals: assetDecimals, price } = assets[asset];
+
+      const weight = ((
+        (((depositShares - borrowShares + fixedPosition) * WAD) / BigInt(10 ** decimals)))
+        * ((price * WAD) / BigInt(10 ** assetDecimals)));
 
       return total + weight;
     },

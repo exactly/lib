@@ -42,5 +42,5 @@ module.exports = {
       ],
     },
   ],
-  ignorePatterns: ["node_modules/", "esm/", "cjs/", "types/"],
+  ignorePatterns: ["node_modules/", "cjs/", "esm/"],
 };

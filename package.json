@@ -5,9 +5,8 @@
   "repository": "github:exactly/lib",
   "scripts": {
     "prepare": "concurrently 'npm:build:*' --group -c auto",
-    "build:esm": "tsc && echo '{ \"type\": \"module\" }' > esm/package.json",
-    "build:cjs": "tsc --module commonjs --outDir cjs && echo '{ \"type\": \"commonjs\" }' > cjs/package.json",
-    "build:types": "tsc --declaration --declarationMap --emitDeclarationOnly --outDir types",
+    "build:cjs": "tsc",
+    "build:esm": "tsc --module ES2020 --outDir esm && echo '{ \"type\": \"module\" }' > esm/package.json",
     "test": "concurrently 'npm:test:*' --group -c auto",
     "test:bun": "bun test",
     "test:lint": "eslint ."
@@ -15,17 +14,8 @@
   "files": [
     "esm",
     "cjs",
-    "types",
     "src"
   ],
-  "exports": {
-    "./*": {
-      "types": "./types/*.d.ts",
-      "require": "./cjs/*.js",
-      "import": "./esm/*.js",
-      "default": "./esm/*.js"
-    }
-  },
   "engines": {
     "node": ">=18"
   },

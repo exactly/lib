@@ -1,7 +1,9 @@
 {
+  "extends": "./tsconfig",
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ESNext",
+    "checkJs": true,
     "allowJs": true
   },
-  "include": ["*.config.*", "**/.eslintrc.*js"]
+  "include": [".eslintrc.*", "test"]
 }

@@ -1,34 +1,49 @@
 import { describe, expect, test } from "bun:test";
+import fc from "fast-check";
 import { parseUnits } from "viem";
 
+import WAD, { SQ_WAD } from "../src/fixed-point-math/WAD";
 import { INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate";
-import mulDivUp from "../src/vector/mulDivUp";
+import mean from "../src/vector/mean";
+import mulDivDown from "../src/vector/mulDivDown";
 import sum from "../src/vector/sum";
 
+import fromAmounts from "../src/installments/fromAmounts";
 import splitInstallments from "../src/installments/split";
 
 describe("installments", () => {
   test("split", () => {
-    const maxPools = 12;
-    const timestamp = 0;
-    const totalAmount = parseUnits("10000", 18);
-    const totalAssets = parseUnits("1000000", 18);
-    const uFloating = parseUnits("0.2", 18);
-    const uGlobal = parseUnits("0.9", 18);
-    let uFixed = Array.from({ length: 6 }).map(() => BigInt(Math.random() * 1e18));
-    uFixed = mulDivUp(uFixed, uGlobal - uFloating, sum(uFixed));
-    const amounts = splitInstallments(
-      totalAmount,
-      totalAssets,
-      INTERVAL,
-      maxPools,
-      uFixed,
-      uFloating,
-      uGlobal,
-      parameters,
-      timestamp,
+    fc.assert(
+      fc.property(
+        fc.bigInt(WAD / 10_000n, WAD),
+        fc.array(fc.bigInt(0n, WAD), { minLength: 2, maxLength: 12 }),
+        fc.bigInt(0n, WAD),
+        fc.bigInt(0n, (WAD * 999n) / 1000n),
+        (totalAmount, uFixed, uFloating, uGlobal) => {
+          const maxPools = 13;
+          const timestamp = 0;
+          const totalAssets = 1_000_000n * WAD;
+
+          uFloating = (uFloating * uGlobal) / WAD;
+          totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
+          if (sum(uFixed) > 0n) uFixed = mulDivDown(uFixed, uGlobal - uFloating, sum(uFixed));
+
+          const common = [totalAssets, INTERVAL, maxPools, uFixed, uFloating, uGlobal, parameters, timestamp] as const;
+          const amounts = splitInstallments(totalAmount, ...common);
+          const installments = fromAmounts(amounts, ...common);
+
+          expect(amounts).toHaveLength(uFixed.length);
+          expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);
+          expect(sum(amounts) - totalAmount).toBeLessThan(totalAmount / 100_000n);
+
+          const avg = mean(installments);
+          for (const installment of installments) {
+            expect(installment > avg ? installment - avg : avg - installment).toBeLessThan(avg / 100n);
+          }
+        },
+      ),
+      { numRuns: process.env.NUM_RUNS ? Number(process.env.NUM_RUNS) : undefined },
     );
-    expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);
   });
 });
 

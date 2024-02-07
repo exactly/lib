@@ -8,8 +8,6 @@ import sub from "../vector/sub.js";
 import sum from "../vector/sum.js";
 import fromAmounts from "./fromAmounts.js";
 
-export type SolverParameters = { weight?: bigint; tolerance?: bigint };
-
 export default function splitInstallments(
   totalAmount: bigint,
   totalAssets: bigint,
@@ -18,13 +16,15 @@ export default function splitInstallments(
   uFixed: readonly bigint[],
   uFloating: bigint,
   uGlobal: bigint,
-  irmParameters: IRMParameters,
+  parameters: IRMParameters,
   timestamp = Date.now() / 1000,
-  { weight = 95n * 10n ** 16n, tolerance = 10n ** 9n }: SolverParameters = {},
+  { weight = (WAD * 95n) / 100n, tolerance = WAD / 1000n, maxIterations = 16 } = {},
 ) {
+  let iterations = 0;
   let amounts = fill(uFixed.length, (totalAmount - 1n) / BigInt(uFixed.length) + 1n);
   let error = 0n;
   do {
+    if (iterations++ >= maxIterations) throw new Error("MAX_ITERATIONS_EXCEEDED");
     const installments = fromAmounts(
       amounts,
       totalAssets,
@@ -33,7 +33,7 @@ export default function splitInstallments(
       uFixed,
       uFloating,
       uGlobal,
-      irmParameters,
+      parameters,
       timestamp,
     );
     const diffs = sub(installments, mean(installments));

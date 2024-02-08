@@ -23,8 +23,8 @@ export default function fromAmounts(
     const maturity = firstMaturity + index * INTERVAL;
     const maturityFactor =
       (BigInt(maturity - timestamp) * WAD) / BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL));
-    const uFixedAfter = uFixedBefore + (amount * WAD - 1n) / totalAssets + 1n;
-    uGlobalAfter += (amount * WAD - 1n) / totalAssets + 1n;
+    const uFixedAfter = amount ? uFixedBefore + (amount * WAD - 1n) / totalAssets + 1n : uFixedBefore;
+    if (amount) uGlobalAfter += (amount * WAD - 1n) / totalAssets + 1n;
     const rate = fixedRate(maturity, maxPools, uFixedAfter, uFloating, uGlobalAfter, parameters, timestamp, natPools);
     return amount + (amount * rate * maturityFactor) / SQ_WAD;
   });

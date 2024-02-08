@@ -18,7 +18,7 @@ export default function splitInstallments(
   uGlobal: bigint,
   parameters: IRMParameters,
   timestamp = Date.now() / 1000,
-  { weight = (WAD * 95n) / 100n, tolerance = WAD / 1000n, maxIterations = 16 } = {},
+  { weight = WAD / 20n, tolerance = WAD / 10_000n, maxIterations = 1000 } = {},
 ) {
   let iterations = 0;
   let amounts = fill(uFixed.length, (totalAmount - 1n) / BigInt(uFixed.length) + 1n);

@@ -1,4 +1,6 @@
 import WAD from "../fixed-point-math/WAD.js";
+import expWad from "../fixed-point-math/expWad.js";
+import lnWad from "../fixed-point-math/lnWad.js";
 import type { IRMParameters } from "../interest-rate-model/fixedRate.js";
 import abs from "../vector/abs.js";
 import fill from "../vector/fill.js";
@@ -18,8 +20,15 @@ export default function splitInstallments(
   uGlobal: bigint,
   parameters: IRMParameters,
   timestamp = Date.now() / 1000,
-  { weight = WAD / 20n, tolerance = WAD / 10_000n, maxIterations = 1000 } = {},
+  {
+    power = (WAD * 60n) / 100n,
+    scaleFactor = (WAD * 95n) / 100n,
+    tolerance = WAD / 10_000n,
+    maxIterations = 66_666n,
+  } = {},
 ) {
+  const uGlobalAfter = uGlobal + (totalAmount * WAD - 1n) / totalAssets + 1n;
+  const weight = uGlobalAfter < WAD ? (scaleFactor * expWad((power * lnWad(WAD - uGlobalAfter)) / WAD)) / WAD : 1n;
   let iterations = 0;
   let amounts = fill(uFixed.length, (totalAmount - 1n) / BigInt(uFixed.length) + 1n);
   let error = 0n;

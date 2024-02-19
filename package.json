@@ -19,22 +19,6 @@
   "engines": {
     "node": ">=18"
   },
-  "peerDependencies": {
-    "graphql": ">=14",
-    "graphql-request": ">=4",
-    "ml-matrix": ">=6.11"
-  },
-  "peerDependenciesMeta": {
-    "graphql": {
-      "optional": true
-    },
-    "graphql-request": {
-      "optional": true
-    },
-    "ml-matrix": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@types/bun": "^1.0.5",
     "@types/eslint": "^8.56.2",

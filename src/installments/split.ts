@@ -23,7 +23,7 @@ export default function splitInstallments(
   {
     power = (WAD * 60n) / 100n,
     scaleFactor = (WAD * 95n) / 100n,
-    tolerance = WAD / 10_000n,
+    tolerance = WAD / 1_000_000_000n,
     maxIterations = 66_666n,
   } = {},
 ) {

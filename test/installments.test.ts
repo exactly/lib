@@ -38,7 +38,7 @@ describe("installments", () => {
 
           const avg = mean(installments);
           for (const installment of installments) {
-            expect(installment > avg ? installment - avg : avg - installment).toBeLessThan(avg / 100n);
+            expect(installment > avg ? installment - avg : avg - installment).toBeLessThan(WAD / 1000n);
           }
         },
       ),

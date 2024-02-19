@@ -28,7 +28,10 @@ export default function splitInstallments(
   } = {},
 ) {
   const uGlobalAfter = uGlobal + (totalAmount * WAD - 1n) / totalAssets + 1n;
-  const weight = uGlobalAfter < WAD ? (scaleFactor * expWad((power * lnWad(WAD - uGlobalAfter)) / WAD)) / WAD : 1n;
+  const weight = max(
+    uGlobalAfter < WAD ? (scaleFactor * expWad((power * lnWad(WAD - uGlobalAfter)) / WAD)) / WAD : 1n,
+    10n ** 15n,
+  );
   let iterations = 0;
   let amounts = fill(uFixed.length, (totalAmount - 1n) / BigInt(uFixed.length) + 1n);
   let error = 0n;
@@ -51,4 +54,8 @@ export default function splitInstallments(
     error = mean(mulDivUp(abs(diffs), weight, WAD));
   } while (error >= tolerance);
   return amounts;
+}
+
+function max(a: bigint, b: bigint) {
+  return a > b ? a : b;
 }

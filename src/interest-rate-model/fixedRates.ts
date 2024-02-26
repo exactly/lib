@@ -11,7 +11,7 @@ export default function fixedRates(
   uFloating: bigint,
   uGlobal: bigint,
   parameters: IRMParameters,
-  timestamp = Date.now() / 1000,
+  timestamp = Math.floor(Date.now() / 1000),
 ) {
   const base = baseRate(uFloating, uGlobal, parameters);
   const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / parameters.fixedAllocation;

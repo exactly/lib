@@ -14,7 +14,7 @@ export default function fixedRate(
   uFloating: bigint,
   uGlobal: bigint,
   parameters: IRMParameters,
-  timestamp = Date.now() / 1000,
+  timestamp = Math.floor(Date.now() / 1000),
   natPools?: bigint,
   base = baseRate(uFloating, uGlobal, parameters),
 ) {

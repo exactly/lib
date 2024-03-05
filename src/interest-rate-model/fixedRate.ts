@@ -22,7 +22,7 @@ export default function fixedRate(
 
   if (timestamp >= maturity) throw new Error("ALREADY_MATURED");
   if (uFixed > uGlobal) throw new Error("UTILIZATION_EXCEEDED");
-  if (uFixed === 0n) return base > maxRate ? maxRate : base;
+  if (uGlobal === 0n) return base > maxRate ? maxRate : base;
 
   const fixedFactor = (BigInt(maxPools) * uFixed * SQ_WAD) / (uGlobal * fixedAllocation);
   const maturityFactor =

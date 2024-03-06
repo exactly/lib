@@ -21,11 +21,9 @@ export default function fromAmounts(
   return uFixed.map((uFixedBefore, index) => {
     const amount = amounts[index]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     const maturity = firstMaturity + index * INTERVAL;
-    const maturityFactor =
-      (BigInt(maturity - timestamp) * WAD) / BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL));
     const uFixedAfter = amount ? uFixedBefore + (amount * WAD - 1n) / totalAssets + 1n : uFixedBefore;
     if (amount) uGlobalAfter += (amount * WAD - 1n) / totalAssets + 1n;
     const rate = fixedRate(maturity, maxPools, uFixedAfter, uFloating, uGlobalAfter, parameters, timestamp, natPools);
-    return amount + (amount * rate * maturityFactor) / SQ_WAD;
+    return amount + (amount * rate * BigInt(maturity - timestamp)) / (WAD * 365n * 86_400n);
   });
 }

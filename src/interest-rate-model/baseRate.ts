@@ -2,24 +2,28 @@ import MAX_UINT256 from "../fixed-point-math/MAX_UINT256.js";
 import WAD from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
-import type IRMParameters from "./Parameters.d.ts";
+import type { IRMBaseParameters } from "./Parameters.d.ts";
 
 const EXP_THRESHOLD = 135_305_999_368_893_231_588n;
 
 export default function baseRate(
   uFloating: bigint,
   uGlobal: bigint,
-  { minRate, naturalRate, maxUtilization, naturalUtilization, sigmoidSpeed, growthSpeed }: IRMParameters,
+  { maxUtilization, naturalUtilization, sigmoidSpeed, growthSpeed, ...p }: IRMBaseParameters,
 ) {
   if (uFloating > uGlobal) throw new Error("UTILIZATION_EXCEEDED");
   if (uGlobal >= WAD) return MAX_UINT256;
 
   const curveA =
-    (((naturalRate * expWad((growthSpeed * lnWad(WAD - naturalUtilization / 2n)) / WAD) - 1n) / WAD + 1n - minRate) *
-      (maxUtilization - naturalUtilization) *
-      maxUtilization) /
-    (naturalUtilization * WAD);
-  const curveB = minRate - (curveA * WAD) / maxUtilization;
+    p.curveA === undefined
+      ? (((p.naturalRate * expWad((growthSpeed * lnWad(WAD - naturalUtilization / 2n)) / WAD) - 1n) / WAD +
+          1n -
+          p.minRate) *
+          (maxUtilization - naturalUtilization) *
+          maxUtilization) /
+        (naturalUtilization * WAD)
+      : p.curveA;
+  const curveB = p.curveB === undefined ? p.minRate - (curveA * WAD) / maxUtilization : p.curveB;
 
   const r = (curveA * WAD) / (maxUtilization - uFloating) + curveB;
   if (uGlobal === 0n) return r;
@@ -37,4 +41,4 @@ export default function baseRate(
 }
 
 export { default as WAD } from "../fixed-point-math/WAD.js";
-export type { default as IRMParameters } from "./Parameters.d.ts";
+export type { default as IRMParameters, IRMBaseParameters } from "./Parameters.d.ts";

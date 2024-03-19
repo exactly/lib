@@ -1,7 +1,5 @@
-export default function sub(a: bigint[], b: bigint[] | bigint) {
-  if (Array.isArray(b)) {
-    if (a.length !== b.length) throw new Error("different length");
-    return a.map((value, index) => value - (b[index] as bigint));
-  }
-  return a.map((value) => value - b);
+import map2 from "./map2.js";
+
+export default function sub(a: readonly bigint[], b: readonly bigint[] | bigint) {
+  return map2(a, b, (a_, b_) => a_ - b_);
 }

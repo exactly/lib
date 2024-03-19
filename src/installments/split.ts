@@ -1,14 +1,16 @@
-import WAD from "../fixed-point-math/WAD.js";
+import WAD, { SQ_WAD, TWO_WAD } from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
-import type { IRMParameters } from "../interest-rate-model/fixedRate.js";
+import sqrt from "../fixed-point-math/sqrt.js";
+import fixedRate, { INTERVAL, type IRMParameters } from "../interest-rate-model/fixedRate.js";
 import abs from "../vector/abs.js";
+import add from "../vector/add.js";
 import fill from "../vector/fill.js";
 import mean from "../vector/mean.js";
 import mulDivUp from "../vector/mulDivUp.js";
+import powDiv from "../vector/powDiv.js";
 import sub from "../vector/sub.js";
 import sum from "../vector/sum.js";
-import fromAmounts from "./fromAmounts.js";
 
 export default function splitInstallments(
   totalAmount: bigint,
@@ -33,27 +35,54 @@ export default function splitInstallments(
     10n ** 15n,
   );
   let iterations = 0;
+  let rates: bigint[] = [];
+  let installments: bigint[] = [];
   let amounts = fill(uFixed.length, (totalAmount - 1n) / BigInt(uFixed.length) + 1n);
+
+  const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / parameters.fixedAllocation;
+  const fNatPools = sqrt(sqFNatPools * WAD);
+  const natPools = ((TWO_WAD - sqFNatPools) * SQ_WAD) / (fNatPools * (WAD - fNatPools));
+
   let error = 0n;
   do {
     if (iterations++ >= maxIterations) throw new Error("MAX_ITERATIONS_EXCEEDED");
-    const installments = fromAmounts(
-      amounts,
-      totalAssets,
-      firstMaturity,
-      maxPools,
-      uFixed,
-      uFloating,
-      uGlobal,
-      parameters,
-      timestamp,
-    );
+    let uGlobalAccumulator = uGlobal;
+    rates = uFixed.map((uFixedBefore, index) => {
+      const amount = amounts[index]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const maturity = firstMaturity + index * INTERVAL;
+      const uFixedAfter = amount ? uFixedBefore + (amount * WAD - 1n) / totalAssets + 1n : uFixedBefore;
+      if (amount) uGlobalAccumulator += (amount * WAD - 1n) / totalAssets + 1n;
+      return fixedRate(maturity, maxPools, uFixedAfter, uFloating, uGlobalAccumulator, parameters, timestamp, natPools);
+    });
+    installments = rates.map((rate, index) => {
+      const amount = amounts[index]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const maturity = firstMaturity + index * INTERVAL;
+      return amount + (amount * rate * BigInt(maturity - timestamp)) / (WAD * 365n * 86_400n);
+    });
+
     const diffs = sub(installments, mean(installments));
     amounts = sub(amounts, mulDivUp(diffs, weight, WAD));
     amounts = mulDivUp(amounts, totalAmount, sum(amounts));
     error = mean(mulDivUp(abs(diffs), weight, WAD));
   } while (error >= tolerance);
-  return amounts;
+
+  const maturityFactors = rates.map(
+    (_, index) =>
+      (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) /
+      BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL)),
+  );
+  let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  error = 0n;
+  do {
+    const aux = add(mulDivUp(maturityFactors, effectiveRate, WAD), WAD);
+    const f = sum(mulDivUp(installments, WAD, aux)) - totalAmount;
+    const fp = -sum(mulDivUp(mulDivUp(installments, maturityFactors, WAD), WAD, powDiv(aux, 2n, WAD)));
+    const rateDiff = (-f * WAD) / fp;
+    effectiveRate += rateDiff;
+    error = rateDiff < 0n ? -rateDiff : rateDiff;
+  } while (error >= tolerance / 10n);
+
+  return { amounts, installments, rates, effectiveRate };
 }
 
 function max(a: bigint, b: bigint) {

@@ -26,6 +26,7 @@ export default function splitInstallments(
     power = (WAD * 60n) / 100n,
     scaleFactor = (WAD * 95n) / 100n,
     tolerance = WAD / 1_000_000_000n,
+    rateTolerance = 10_000n,
     maxIterations = 66_666n,
   } = {},
 ) {
@@ -65,6 +66,7 @@ export default function splitInstallments(
     amounts = mulDivUp(amounts, totalAmount, sum(amounts));
     error = mean(mulDivUp(abs(diffs), weight, WAD));
   } while (error >= tolerance);
+  console.log(rates.map((rate) => Number(rate) / 1e18));
 
   const maturityFactors = rates.map(
     (_, index) =>
@@ -80,7 +82,8 @@ export default function splitInstallments(
     const rateDiff = (-f * WAD) / fp;
     effectiveRate += rateDiff;
     error = rateDiff < 0n ? -rateDiff : rateDiff;
-  } while (error >= tolerance / 10n);
+  } while (error >= rateTolerance);
+  console.log(Number(effectiveRate) / 1e18);
 
   return { amounts, installments, rates, effectiveRate };
 }

@@ -3,9 +3,11 @@ import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
 import fixedRate, { INTERVAL, type IRMParameters } from "../interest-rate-model/fixedRate.js";
 import abs from "../vector/abs.js";
+import add from "../vector/add.js";
 import fill from "../vector/fill.js";
 import mean from "../vector/mean.js";
 import mulDivUp from "../vector/mulDivUp.js";
+import powDiv from "../vector/powDiv.js";
 import sub from "../vector/sub.js";
 import sum from "../vector/sum.js";
 
@@ -23,6 +25,7 @@ export default function splitInstallments(
     power = (WAD * 60n) / 100n,
     scaleFactor = (WAD * 95n) / 100n,
     tolerance = WAD / 1_000_000_000n,
+    rateTolerance = 10_000n,
     maxIterations = 66_666n,
   } = {},
 ) {
@@ -59,7 +62,23 @@ export default function splitInstallments(
     error = mean(mulDivUp(abs(diffs), weight, WAD));
   } while (error >= tolerance);
 
-  return { amounts, installments, rates };
+  const maturityFactors = rates.map(
+    (_, index) =>
+      (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) /
+      BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL)),
+  );
+  let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  error = 0n;
+  do {
+    const aux = add(mulDivUp(maturityFactors, effectiveRate, WAD), WAD);
+    const f = sum(mulDivUp(installments, WAD, aux)) - totalAmount;
+    const fp = -sum(mulDivUp(mulDivUp(installments, maturityFactors, WAD), WAD, powDiv(aux, 2n, WAD)));
+    const rateDiff = (-f * WAD) / fp;
+    effectiveRate += rateDiff;
+    error = rateDiff < 0n ? -rateDiff : rateDiff;
+  } while (error >= rateTolerance);
+
+  return { amounts, installments, rates, effectiveRate };
 }
 
 function max(a: bigint, b: bigint) {

@@ -4,7 +4,9 @@ import { parseUnits } from "viem";
 
 import WAD, { SQ_WAD } from "../src/fixed-point-math/WAD";
 import { INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate";
+import max from "../src/vector/max";
 import mean from "../src/vector/mean";
+import min from "../src/vector/min";
 import mulDivDown from "../src/vector/mulDivDown";
 import sum from "../src/vector/sum";
 
@@ -28,7 +30,7 @@ describe("installments", () => {
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
           if (sum(uFixed) > 0n) uFixed = mulDivDown(uFixed, uGlobal - uFloating, sum(uFixed));
 
-          const { amounts, installments } = splitInstallments(
+          const { amounts, installments, rates, effectiveRate } = splitInstallments(
             totalAmount,
             totalAssets,
             firstMaturity,
@@ -43,6 +45,8 @@ describe("installments", () => {
           expect(amounts).toHaveLength(uFixed.length);
           expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);
           expect(sum(amounts) - totalAmount).toBeLessThan(totalAmount / 100_000n);
+          expect(effectiveRate).toBeGreaterThanOrEqual(min(rates));
+          expect(effectiveRate).toBeLessThanOrEqual(max(rates));
 
           const avg = mean(installments);
           for (const installment of installments) {

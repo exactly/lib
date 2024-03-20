@@ -1,5 +1,3 @@
-import WAD, { SQ_WAD, TWO_WAD } from "../fixed-point-math/WAD.js";
-import sqrt from "../fixed-point-math/sqrt.js";
 import type IRMParameters from "./Parameters.js";
 import baseRate from "./baseRate.js";
 import fixedRate, { INTERVAL } from "./fixedRate.js";
@@ -14,13 +12,9 @@ export default function fixedRates(
   timestamp = Math.floor(Date.now() / 1000),
 ) {
   const base = baseRate(uFloating, uGlobal, parameters);
-  const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / parameters.fixedAllocation;
-  const fNatPools = sqrt(sqFNatPools * WAD);
-  const natPools = ((TWO_WAD - sqFNatPools) * SQ_WAD) / (fNatPools * (WAD - fNatPools));
-
   return uFixed.map((uFixedBefore, index) => {
     const maturity = firstMaturity + index * INTERVAL;
-    fixedRate(maturity, maxPools, uFixedBefore, uFloating, uGlobal, parameters, timestamp, natPools, base);
+    fixedRate(maturity, maxPools, uFixedBefore, uFloating, uGlobal, parameters, timestamp, base);
   });
 }
 

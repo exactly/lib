@@ -15,7 +15,6 @@ export default function fixedRate(
   uGlobal: bigint,
   parameters: IRMParameters,
   timestamp = Math.floor(Date.now() / 1000),
-  natPools?: bigint,
   base = baseRate(uFloating, uGlobal, parameters),
   z?: bigint,
 ) {
@@ -27,11 +26,9 @@ export default function fixedRate(
 
   if (z === undefined) {
     const fixedFactor = (BigInt(maxPools) * uFixed * SQ_WAD) / (uGlobal * fixedAllocation);
-    if (natPools == undefined) {
-      const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / fixedAllocation;
-      const fNatPools = sqrt(sqFNatPools * WAD);
-      natPools = ((TWO_WAD - sqFNatPools) * SQ_WAD) / (fNatPools * (WAD - fNatPools));
-    }
+    const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / fixedAllocation;
+    const fNatPools = sqrt(sqFNatPools * WAD);
+    const natPools = ((TWO_WAD - sqFNatPools) * SQ_WAD) / (fNatPools * (WAD - fNatPools));
     z = (natPools * sqrt(fixedFactor * WAD)) / WAD + ((WAD - natPools) * fixedFactor) / WAD - WAD;
   }
 

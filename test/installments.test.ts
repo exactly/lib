@@ -8,7 +8,6 @@ import mean from "../src/vector/mean";
 import mulDivDown from "../src/vector/mulDivDown";
 import sum from "../src/vector/sum";
 
-import fromAmounts from "../src/installments/fromAmounts";
 import splitInstallments from "../src/installments/split";
 
 describe("installments", () => {
@@ -22,15 +21,24 @@ describe("installments", () => {
         (totalAmount, uFixed, uFloating, uGlobal) => {
           const maxPools = 13;
           const timestamp = 0;
+          const firstMaturity = INTERVAL;
           const totalAssets = 1_000_000n * WAD;
 
           uFloating = (uFloating * uGlobal) / WAD;
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
           if (sum(uFixed) > 0n) uFixed = mulDivDown(uFixed, uGlobal - uFloating, sum(uFixed));
 
-          const common = [totalAssets, INTERVAL, maxPools, uFixed, uFloating, uGlobal, parameters, timestamp] as const;
-          const amounts = splitInstallments(totalAmount, ...common);
-          const installments = fromAmounts(amounts, ...common);
+          const { amounts, installments } = splitInstallments(
+            totalAmount,
+            totalAssets,
+            firstMaturity,
+            maxPools,
+            uFixed,
+            uFloating,
+            uGlobal,
+            parameters,
+            timestamp,
+          );
 
           expect(amounts).toHaveLength(uFixed.length);
           expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);

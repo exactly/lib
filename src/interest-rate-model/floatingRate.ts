@@ -1,4 +1,4 @@
-import type { IRMFloatingParameters } from "./Parameters.d.ts";
+import type { IRMFloatingParameters } from "./Parameters.ts";
 import baseRate from "./baseRate.js";
 
 export default function floatingRate(uFloating: bigint, uGlobal: bigint, parameters: IRMFloatingParameters) {
@@ -8,4 +8,4 @@ export default function floatingRate(uFloating: bigint, uGlobal: bigint, paramet
 }
 
 export { default as WAD } from "../fixed-point-math/WAD.js";
-export type { default as IRMParameters, IRMFloatingParameters } from "./Parameters.d.ts";
+export type { default as IRMParameters, IRMFloatingParameters } from "./Parameters.ts";

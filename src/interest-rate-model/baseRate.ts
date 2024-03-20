@@ -2,7 +2,7 @@ import MAX_UINT256 from "../fixed-point-math/MAX_UINT256.js";
 import WAD from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
-import type { IRMBaseParameters } from "./Parameters.d.ts";
+import type { IRMBaseParameters } from "./Parameters.ts";
 
 const EXP_THRESHOLD = 135_305_999_368_893_231_588n;
 
@@ -41,4 +41,4 @@ export default function baseRate(
 }
 
 export { default as WAD } from "../fixed-point-math/WAD.js";
-export type { default as IRMParameters, IRMBaseParameters } from "./Parameters.d.ts";
+export type { default as IRMParameters, IRMBaseParameters } from "./Parameters.ts";

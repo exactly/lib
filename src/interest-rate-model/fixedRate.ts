@@ -17,6 +17,7 @@ export default function fixedRate(
   timestamp = Math.floor(Date.now() / 1000),
   natPools?: bigint,
   base = baseRate(uFloating, uGlobal, parameters),
+  z?: bigint,
 ) {
   const { spreadFactor, maturitySpeed, timePreference, fixedAllocation, maxRate } = parameters;
 
@@ -24,22 +25,21 @@ export default function fixedRate(
   if (uFixed > uGlobal) throw new Error("UTILIZATION_EXCEEDED");
   if (uGlobal === 0n) return base > maxRate ? maxRate : base;
 
-  const fixedFactor = (BigInt(maxPools) * uFixed * SQ_WAD) / (uGlobal * fixedAllocation);
-  const maturityFactor =
-    (BigInt(maturity - timestamp) * WAD) / BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL));
-  if (natPools == undefined) {
-    const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / fixedAllocation;
-    const fNatPools = sqrt(sqFNatPools * WAD);
-    natPools = ((TWO_WAD - sqFNatPools) * SQ_WAD) / (fNatPools * (WAD - fNatPools));
+  if (z === undefined) {
+    const fixedFactor = (BigInt(maxPools) * uFixed * SQ_WAD) / (uGlobal * fixedAllocation);
+    if (natPools == undefined) {
+      const sqFNatPools = (BigInt(maxPools) * SQ_WAD) / fixedAllocation;
+      const fNatPools = sqrt(sqFNatPools * WAD);
+      natPools = ((TWO_WAD - sqFNatPools) * SQ_WAD) / (fNatPools * (WAD - fNatPools));
+    }
+    z = (natPools * sqrt(fixedFactor * WAD)) / WAD + ((WAD - natPools) * fixedFactor) / WAD - WAD;
   }
 
+  const maturityFactor =
+    (BigInt(maturity - timestamp) * WAD) / BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL));
+
   const spread =
-    WAD +
-    (expWad((maturitySpeed * lnWad(maturityFactor)) / WAD) *
-      (timePreference +
-        (spreadFactor * ((natPools * sqrt(fixedFactor * WAD)) / WAD + ((WAD - natPools) * fixedFactor) / WAD - WAD)) /
-          WAD)) /
-      WAD;
+    WAD + (expWad((maturitySpeed * lnWad(maturityFactor)) / WAD) * (timePreference + (spreadFactor * z) / WAD)) / WAD;
 
   if (base >= (maxRate * WAD) / spread) return maxRate;
   return (base * spread - 1n) / WAD + 1n;

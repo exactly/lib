@@ -65,7 +65,7 @@ export default function splitInstallments(
   const maturityFactors = rates.map(
     (_, index) =>
       (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) /
-      BigInt(timestamp + maxPools * INTERVAL - (timestamp % INTERVAL)),
+      BigInt(maxPools * INTERVAL - (timestamp % INTERVAL)),
   );
   let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   error = 0n;

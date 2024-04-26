@@ -7,7 +7,7 @@ import floatingRate from "../src/interest-rate-model/floatingRate";
 describe("interest rate model", () => {
   test("fixed rate", () => {
     expect(fixedRate(INTERVAL, 6, parseUnits("0.75", 18), 0n, parseUnits("0.75", 18), parameters, 1)).toBe(
-      63726888426261496n, // eslint-disable-line unicorn/numeric-separators-style
+      63726888252924763n, // eslint-disable-line unicorn/numeric-separators-style
     );
   });
   test("floating rate", () => {

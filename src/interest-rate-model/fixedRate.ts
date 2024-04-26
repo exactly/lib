@@ -32,7 +32,7 @@ export default function fixedRate(
     z = (natPools * sqrt(fixedFactor * WAD)) / WAD + ((WAD - natPools) * fixedFactor) / WAD - WAD;
   }
 
-  const maturityFactor = (BigInt(maturity - timestamp) * WAD) / BigInt(maxPools * INTERVAL - (timestamp % INTERVAL));
+  const maturityFactor = (BigInt(maturity - timestamp) * WAD) / BigInt(maxPools * INTERVAL);
 
   const spread =
     WAD + (expWad((maturitySpeed * lnWad(maturityFactor)) / WAD) * (timePreference + (spreadFactor * z) / WAD)) / WAD;

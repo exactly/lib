@@ -11,6 +11,8 @@ import powDiv from "../vector/powDiv.js";
 import sub from "../vector/sub.js";
 import sum from "../vector/sum.js";
 
+export const ONE_YEAR = 365n * 86_400n;
+
 export default function splitInstallments(
   totalAmount: bigint,
   totalAssets: bigint,
@@ -53,7 +55,7 @@ export default function splitInstallments(
     installments = rates.map((rate, index) => {
       const amount = amounts[index]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const maturity = firstMaturity + index * INTERVAL;
-      return amount + (amount * rate * BigInt(maturity - timestamp)) / (WAD * 365n * 86_400n);
+      return amount + (amount * rate * BigInt(maturity - timestamp)) / (WAD * ONE_YEAR);
     });
 
     const diffs = sub(installments, mean(installments));
@@ -63,7 +65,7 @@ export default function splitInstallments(
   } while (error >= tolerance);
 
   const maturityFactors = rates.map(
-    (_, index) => (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) / BigInt(maxPools * INTERVAL),
+    (_, index) => (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) / ONE_YEAR,
   );
   let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   error = 0n;

@@ -1,15 +1,15 @@
-import { describe, expect, test } from "bun:test";
 import { parseUnits } from "viem";
+import { describe, expect, it } from "vitest";
 
-import WAD from "../src/fixed-point-math/WAD";
-import expWad from "../src/fixed-point-math/expWad";
-import lnWad from "../src/fixed-point-math/lnWad";
-import log2 from "../src/fixed-point-math/log2";
-import sqrt from "../src/fixed-point-math/sqrt";
+import WAD from "../src/fixed-point-math/WAD.js";
+import expWad from "../src/fixed-point-math/expWad.js";
+import lnWad from "../src/fixed-point-math/lnWad.js";
+import log2 from "../src/fixed-point-math/log2.js";
+import sqrt from "../src/fixed-point-math/sqrt.js";
 
 describe("fixed point math", () => {
   /* eslint-disable unicorn/numeric-separators-style */
-  test("expWad", () => {
+  it("expWad", () => {
     expect(expWad(-42139678854452767551n)).toBe(0n);
     expect(expWad(parseUnits("-3", 18))).toBe(49787068367863942n);
     expect(expWad(parseUnits("-2", 18))).toBe(135335283236612691n);
@@ -29,7 +29,8 @@ describe("fixed point math", () => {
       57896044618658097650144101621524338577433870140581303254786265309376407432913n,
     );
   });
-  test("lnWad", () => {
+
+  it("lnWad", () => {
     expect(lnWad(WAD)).toBe(0n);
     expect(lnWad(2718281828459045235n)).toBe(999999999999999999n);
     expect(lnWad(11723640096265400935n)).toBe(2461607324344817918n);
@@ -41,14 +42,16 @@ describe("fixed point math", () => {
     expect(lnWad(2n ** 170n)).toBe(76388489021297880288n);
     expect(lnWad(2n ** 128n)).toBe(47276307437780177293n);
   });
-  test("log2", () => {
+
+  it("log2", () => {
     expect(log2(2n)).toBe(1n);
     expect(log2(4n)).toBe(2n);
     expect(log2(1024n)).toBe(10n);
     expect(log2(1048576n)).toBe(20n);
     expect(log2(1073741824n)).toBe(30n);
   });
-  test("sqrt", () => {
+
+  it("sqrt", () => {
     expect(sqrt(0n)).toBe(0n);
     expect(sqrt(1n)).toBe(1n);
     expect(sqrt(2704n)).toBe(52n);

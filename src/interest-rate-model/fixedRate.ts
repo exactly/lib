@@ -1,9 +1,9 @@
+import type IRMParameters from "./Parameters.ts";
+import baseRate from "./baseRate.js";
 import WAD, { SQ_WAD, TWO_WAD } from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
 import sqrt from "../fixed-point-math/sqrt.js";
-import type IRMParameters from "./Parameters.ts";
-import baseRate from "./baseRate.js";
 
 export const INTERVAL = 4 * 7 * 86_400;
 

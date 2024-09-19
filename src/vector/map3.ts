@@ -6,13 +6,13 @@ export default function map3(
 ) {
   if (Array.isArray(b) && Array.isArray(c)) {
     if (a.length !== b.length || a.length !== c.length) throw new Error("different length");
-    return a.map((value, index) => f(value, b[index] as bigint, c[index] as bigint));
+    return a.map((value, index) => f(value, b[index]!, c[index]!)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   } else if (Array.isArray(b)) {
     if (a.length !== b.length) throw new Error("different length");
-    return a.map((value, index) => f(value, b[index] as bigint, c as bigint));
+    return a.map((value, index) => f(value, b[index]!, c as bigint)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   } else if (Array.isArray(c)) {
     if (a.length !== c.length) throw new Error("different length");
-    return a.map((value, index) => f(value, b, c[index] as bigint));
+    return a.map((value, index) => f(value, b, c[index]!)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
   return a.map((value) => f(value, b, c));
 }

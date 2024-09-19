@@ -4,11 +4,11 @@
   "homepage": "https://exact.ly",
   "repository": "github:exactly/lib",
   "scripts": {
-    "prepare": "concurrently 'npm:build:*' --group -c auto",
+    "prepare": "pnpm run --aggregate-output /build:/",
     "build:cjs": "tsc",
     "build:esm": "tsc --module ES2020 --outDir esm && echo '{ \"type\": \"module\" }' > esm/package.json",
-    "test": "concurrently 'npm:test:*' --group -c auto",
-    "test:bun": "bun test",
+    "test": "pnpm run --aggregate-output /test:/",
+    "test:vi": "vitest run",
     "test:lint": "eslint ."
   },
   "files": [
@@ -20,29 +20,32 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.6",
-    "@types/eslint": "^8.56.2",
-    "@types/node": "^20.11.19",
-    "@typescript-eslint/eslint-plugin": "^7.0.2",
-    "@typescript-eslint/parser": "^7.0.2",
-    "concurrently": "^8.2.2",
-    "eslint": "^8.56.0",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.4.0",
+    "@types/eslint": "^9.6.1",
+    "@types/node": "^22.5.5",
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "@vitest/coverage-v8": "^2.1.1",
+    "@vitest/eslint-plugin": "^1.1.4",
+    "@vitest/ui": "^2.1.1",
+    "eslint": "maintenance",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jest": "^27.9.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-require-extensions": "^0.1.3",
-    "eslint-plugin-unicorn": "^51.0.1",
-    "fast-check": "^3.15.1",
-    "graphql": "^16.8.1",
-    "graphql-request": "^6.1.0",
-    "ml-matrix": "^6.11.0",
-    "prettier": "^3.2.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "viem": "^2.7.10"
+    "eslint-config-universe": "^13.0.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jest": "^28.8.3",
+    "eslint-plugin-n": "^17.10.3",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unicorn": "^55.0.0",
+    "fast-check": "^3.22.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2",
+    "viem": "^2.21.9",
+    "vitest": "^2.1.1"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "eslint-config-universe": "patches/eslint-config-universe.patch"
+    }
   }
 }

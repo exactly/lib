@@ -9,9 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ">=9.10.0"
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun run test
+          node-version: ">=22.8.0"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+      - uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

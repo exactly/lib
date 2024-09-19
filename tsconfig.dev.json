@@ -5,5 +5,5 @@
     "checkJs": true,
     "allowJs": true
   },
-  "include": [".eslintrc.*", "test"]
+  "include": [".eslintrc.cjs", "test", "*.config.mts"]
 }

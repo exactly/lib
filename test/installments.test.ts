@@ -8,7 +8,7 @@ import { INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRa
 import max from "../src/vector/max.js";
 import mean from "../src/vector/mean.js";
 import min from "../src/vector/min.js";
-import mulDivDown from "../src/vector/mulDivDown.js";
+import mulDiv from "../src/vector/mulDiv.js";
 import sum from "../src/vector/sum.js";
 
 describe("installments", () => {
@@ -29,7 +29,7 @@ describe("installments", () => {
 
           uFloating = (uFloating * uGlobal) / WAD;
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
-          if (sum(uFixed) > 0n) uFixed = mulDivDown(uFixed, uGlobal - uFloating, sum(uFixed));
+          if (sum(uFixed) > 0n) uFixed = mulDiv(uFixed, uGlobal - uFloating, sum(uFixed));
 
           const { amounts, installments, rates, effectiveRate } = splitInstallments(
             totalAmount,

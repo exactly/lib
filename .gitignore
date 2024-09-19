@@ -1,5 +1,4 @@
-/cjs/
-/esm/
+/dist/
 .vscode/
 coverage/
 node_modules/

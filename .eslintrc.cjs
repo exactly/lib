@@ -43,5 +43,5 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ["cjs/", "esm/", "coverage/"],
+  ignorePatterns: ["dist/", "coverage/"],
 };

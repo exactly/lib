@@ -4,16 +4,17 @@
   "homepage": "https://exact.ly",
   "repository": "github:exactly/lib",
   "scripts": {
-    "prepare": "pnpm run --aggregate-output /build:/",
-    "build:cjs": "tsc",
+    "prepare": "pnpm build",
+    "build": "pkgroll --sourcemap",
     "build:esm": "tsc --module ES2020 --outDir esm && echo '{ \"type\": \"module\" }' > esm/package.json",
     "test": "pnpm run --aggregate-output /test:/",
     "test:vi": "vitest run",
     "test:lint": "eslint ."
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "esm",
-    "cjs",
+    "dist",
     "src"
   ],
   "engines": {
@@ -38,6 +39,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-unicorn": "^55.0.0",
     "fast-check": "^3.22.0",
+    "pkgroll": "^2.5.0",
     "prettier": "^3.3.3",
     "typescript": "^5.6.2",
     "viem": "^2.21.9",

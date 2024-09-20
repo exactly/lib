@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 
 import accountLiquidity from "../src/auditor/accountLiquidity.js";
 import healthFactor from "../src/auditor/healthFactor.js";
+import withdrawLimit from "../src/auditor/withdrawLimit.js";
 import divWad from "../src/fixed-point-math/divWad.js";
 import divWadUp from "../src/fixed-point-math/divWadUp.js";
+import min from "../src/fixed-point-math/min.js";
 import mulDiv from "../src/fixed-point-math/mulDiv.js";
 import mulWad from "../src/fixed-point-math/mulWad.js";
 import { INTERVAL } from "../src/interest-rate-model/fixedRate.js";
@@ -22,6 +24,18 @@ describe("auditor", () => {
     const { collateral, debt } = exactlyAccountLiquidity();
 
     expect(healthFactor(exactly, 0)).toBe(divWad(collateral, debt));
+  });
+
+  it("withdraw limit", () => {
+    const { collateral, debt } = exactlyAccountLiquidity();
+    const limit = min(collateral - debt, collateral);
+    const normalizedLimit = mulDiv(
+      divWad(limit, exactly.marketsData[0].adjustFactor),
+      10n ** BigInt(exactly.marketsData[0].decimals),
+      exactly.marketsData[0].usdPrice,
+    );
+
+    expect(normalizedLimit).toBe(withdrawLimit(exactly, exactly.marketsData[0].market, 0));
   });
 });
 

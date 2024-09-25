@@ -1,4 +1,4 @@
-import type { AccountLiquidityParameters } from "./accountLiquidity.js";
+import type { AccountLiquidityData } from "./accountLiquidity.js";
 import accountLiquidity, { adjustCollateral } from "./accountLiquidity.js";
 import divWad from "../fixed-point-math/divWad.js";
 import min from "../fixed-point-math/min.js";
@@ -6,12 +6,12 @@ import mulDiv from "../fixed-point-math/mulDiv.js";
 
 /// returns 0n if the market is not found
 export default function withdrawLimit(
-  p: AccountLiquidityParameters,
+  data: AccountLiquidityData,
   market: string,
   timestamp = Math.floor(Date.now() / 1000),
 ): bigint {
-  const { adjCollateral, adjDebt } = accountLiquidity(p, timestamp);
-  const marketData = p.marketsData.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());
+  const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);
+  const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());
   if (!marketData) return 0n;
 
   const { decimals, usdPrice, adjustFactor, floatingDepositAssets } = marketData;

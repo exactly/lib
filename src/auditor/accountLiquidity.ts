@@ -4,7 +4,7 @@ import mulDivUp from "../fixed-point-math/mulDivUp.js";
 import mulWad from "../fixed-point-math/mulWad.js";
 
 export default function accountLiquidity(
-  { marketsData }: AccountLiquidityParameters,
+  data: AccountLiquidityData,
   timestamp = Math.floor(Date.now() / 1000),
 ): {
   adjCollateral: bigint;
@@ -21,15 +21,15 @@ export default function accountLiquidity(
     decimals,
     adjustFactor,
     usdPrice,
-  } of marketsData) {
+  } of data) {
     const baseUnit = 10n ** BigInt(decimals);
     if (isCollateral) adjCollateral += adjustCollateral(floatingDepositAssets, usdPrice, baseUnit, adjustFactor);
 
     let totalDebt = floatingBorrowAssets;
-    for (const { principal, fee, maturity } of fixedBorrowPositions) {
-      const positionAssets = principal + fee;
+    for (const { position, maturity } of fixedBorrowPositions) {
+      const positionAssets = position.principal + position.fee;
       totalDebt += positionAssets;
-      if (timestamp > maturity) totalDebt += mulWad(positionAssets, BigInt(timestamp - maturity) * penaltyRate);
+      if (timestamp > maturity) totalDebt += mulWad(positionAssets, BigInt(timestamp) - maturity * penaltyRate);
     }
     adjDebt += divWadUp(mulDivUp(totalDebt, usdPrice, baseUnit), adjustFactor);
   }
@@ -46,16 +46,14 @@ export function adjustCollateral(
   return mulWad(mulDiv(floatingDepositAssets, usdPrice, baseUnit), adjustFactor);
 }
 
-export interface AccountLiquidityParameters {
-  marketsData: readonly {
-    market: string;
-    decimals: number;
-    usdPrice: bigint;
-    adjustFactor: bigint;
-    isCollateral: boolean;
-    floatingBorrowAssets: bigint;
-    floatingDepositAssets: bigint;
-    fixedBorrowPositions: readonly { maturity: number; principal: bigint; fee: bigint }[];
-    penaltyRate: bigint;
-  }[];
-}
+export type AccountLiquidityData = readonly {
+  market: string;
+  decimals: number;
+  usdPrice: bigint;
+  adjustFactor: bigint;
+  isCollateral: boolean;
+  floatingBorrowAssets: bigint;
+  floatingDepositAssets: bigint;
+  fixedBorrowPositions: readonly { maturity: bigint; position: { principal: bigint; fee: bigint } }[];
+  penaltyRate: bigint;
+}[];

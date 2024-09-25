@@ -19,17 +19,23 @@
     "src"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "^4.4.0",
+    "@exactly/protocol": "exactly/protocol#d2b0caa",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable-v4": "npm:@openzeppelin/contracts-upgradeable@^4.9.6",
+    "@openzeppelin/contracts-v4": "npm:@openzeppelin/contracts@^4.9.6",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^22.5.5",
-    "@typescript-eslint/eslint-plugin": "^8.6.0",
-    "@typescript-eslint/parser": "^8.6.0",
+    "@types/node": "^22.7.2",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
     "@vitest/coverage-v8": "^2.1.1",
     "@vitest/eslint-plugin": "^1.1.4",
     "@vitest/ui": "^2.1.1",
+    "@wagmi/cli": "^2.1.16",
     "eslint": "maintenance",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-universe": "^13.0.0",
@@ -39,11 +45,16 @@
     "eslint-plugin-n": "^17.10.3",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-unicorn": "^55.0.0",
+    "execa": "^9.4.0",
     "fast-check": "^3.22.0",
+    "forge-std": "foundry-rs/forge-std#v1.9.2",
     "pkgroll": "^2.5.0",
     "prettier": "^3.3.3",
+    "prool": "^0.0.16",
+    "solmate": "transmissions11/solmate#v7",
     "typescript": "^5.6.2",
-    "viem": "^2.21.9",
+    "valibot": "^0.42.1",
+    "viem": "^2.21.14",
     "vitest": "^2.1.1"
   },
   "pnpm": {

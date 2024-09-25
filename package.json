@@ -8,6 +8,8 @@
     "build": "pkgroll --sourcemap",
     "test": "pnpm run --aggregate-output /test:/",
     "test:vi": "vitest run",
+    "test:ts:lib": "tsc",
+    "test:ts:dev": "tsc -p tsconfig.dev.json",
     "test:lint": "eslint ."
   },
   "main": "./dist/index.js",

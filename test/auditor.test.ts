@@ -1,6 +1,8 @@
-import { parseUnits } from "viem";
-import { describe, expect, it } from "vitest";
+import { parseUnits, zeroAddress } from "viem";
+import { describe, expect, inject, it } from "vitest";
 
+import { previewerAbi } from "./generated/contracts.js";
+import anvilClient from "./utils/anvilClient.js";
 import accountLiquidity from "../src/auditor/accountLiquidity.js";
 import healthFactor from "../src/auditor/healthFactor.js";
 import withdrawLimit from "../src/auditor/withdrawLimit.js";
@@ -77,5 +79,26 @@ describe("with static data", () => {
     );
 
     expect(normalizedLimit).toBe(withdrawLimit(exactly, exactly[0].market, 0));
+  });
+});
+
+describe("with previewer data", async () => {
+  const exactly = await anvilClient.readContract({
+    address: inject("Previewer"),
+    functionName: "exactly",
+    args: [zeroAddress],
+    abi: previewerAbi,
+  });
+
+  it("account liquidity", () => {
+    accountLiquidity(exactly, 0);
+  });
+
+  it("health factor", () => {
+    healthFactor(exactly, 0);
+  });
+
+  it("withdraw limit", () => {
+    withdrawLimit(exactly, inject("MarketUSDC"), 0);
   });
 });

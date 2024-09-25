@@ -9,6 +9,7 @@ import { Market } from "@exactly/protocol/Market.sol";
 import { MockBalancerVault } from "@exactly/protocol/mocks/MockBalancerVault.sol";
 import { MockPriceFeed } from "@exactly/protocol/mocks/MockPriceFeed.sol";
 import { Previewer } from "@exactly/protocol/periphery/Previewer.sol";
+import { RatePreviewer } from "@exactly/protocol/periphery/RatePreviewer.sol";
 
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
@@ -25,6 +26,7 @@ contract DeployProtocol is Script {
   MockERC20 public usdc;
   MockWETH public weth;
   Previewer public previewer;
+  RatePreviewer public ratePreviewer;
 
   MockBalancerVault public balancer;
 
@@ -75,11 +77,28 @@ contract DeployProtocol is Script {
     auditor.enableMarket(exaWETH, new MockPriceFeed(18, 2500e18), 0.86e18);
 
     previewer = new Previewer(auditor, IPriceFeed(address(0)));
+    ratePreviewer = new RatePreviewer(auditor);
 
     balancer = new MockBalancerVault();
     exa.mint(address(balancer), 1_000_000e18);
     usdc.mint(address(balancer), 1_000_000e6);
     vm.label(address(balancer), "BalancerVault");
+
+    exa.mint(msg.sender, 10_000e18);
+    usdc.mint(msg.sender, 1_000_000e6);
+    weth.mint(msg.sender, 100e18);
+
+    exa.approve(address(exaEXA), type(uint256).max);
+    exaEXA.deposit(10_000e18, msg.sender);
+    exaEXA.borrow(1000e18, msg.sender, msg.sender);
+
+    usdc.approve(address(exaUSDC), type(uint256).max);
+    exaUSDC.deposit(430_000e6, msg.sender);
+    exaUSDC.borrow(307_000e6, msg.sender, msg.sender);
+
+    weth.approve(address(exaWETH), type(uint256).max);
+    exaWETH.deposit(100e18, msg.sender);
+    exaWETH.borrow(10e18, msg.sender, msg.sender);
 
     vm.stopBroadcast();
   }

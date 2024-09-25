@@ -9,7 +9,7 @@ import type { GlobalSetupContext } from "vitest/node";
 import anvilClient from "./anvilClient.js";
 
 export default async function setup({ provide }: GlobalSetupContext) {
-  const instance = anvil({ codeSizeLimit: 42_000, blockBaseFeePerGas: 1n });
+  const instance = anvil({ codeSizeLimit: 42_000, blockBaseFeePerGas: 1n, blockTime: 1, timestamp: 0 });
   const initialize = await instance
     .start()
     .then(() => true)
@@ -29,15 +29,16 @@ export default async function setup({ provide }: GlobalSetupContext) {
   }
 
   // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
-  const [, , , , , , , , , , , usdc, , marketUSDC, , , , , , , , marketWETH, , , , , , previewer] = parse(
-    Protocol,
-    await import(`broadcast/Protocol.s.sol/${String(foundry.id)}/run-latest.json`),
-  ).transactions;
+  const [, , , , , , , , , , , usdc, , marketUSDC, , , , , , , , marketWETH, , , , , , previewer, ratePreviewer] =
+    parse(Protocol, await import(`broadcast/Protocol.s.sol/${String(foundry.id)}/run-latest.json`)).transactions;
 
   provide("MarketUSDC", marketUSDC.contractAddress);
   provide("MarketWETH", marketWETH.contractAddress);
   provide("Previewer", previewer.contractAddress);
+  provide("RatePreviewer", ratePreviewer.contractAddress);
   provide("USDC", usdc.contractAddress);
+
+  await anvilClient.setAutomine(false);
 
   return async function teardown() {
     await instance.stop();
@@ -82,6 +83,7 @@ const Protocol = object({
     object({ transactionType: literal("CREATE"), contractName: literal("MockPriceFeed") }),
     object({ transactionType: literal("CALL") }),
     object({ transactionType: literal("CREATE"), contractName: literal("Previewer"), contractAddress: Address }),
+    object({ transactionType: literal("CREATE"), contractName: literal("RatePreviewer"), contractAddress: Address }),
     object({
       transactionType: literal("CREATE"),
       contractName: literal("MockBalancerVault"),
@@ -95,6 +97,7 @@ declare module "vitest" {
     MarketUSDC: Address;
     MarketWETH: Address;
     Previewer: Address;
+    RatePreviewer: Address;
     USDC: Address;
   }
 }

@@ -1,0 +1,6 @@
+@exactly/protocol/=node_modules/@exactly/protocol/contracts/
+@openzeppelin/contracts-upgradeable-v4/=node_modules/@openzeppelin/contracts-upgradeable-v4/
+@openzeppelin/contracts-v4/=node_modules/@openzeppelin/contracts-v4/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts-v4/
+forge-std/=node_modules/forge-std/src/
+solmate/=node_modules/solmate/

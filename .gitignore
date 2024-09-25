@@ -9,3 +9,9 @@ Thumbs.db
 .*-version*
 *.log
 *.tgz
+
+broadcast/
+cache/
+docs/
+out/
+lcov.info

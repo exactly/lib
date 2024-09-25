@@ -1,0 +1,19 @@
+[profile.default]
+solc_version = "0.8.27"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 6_900
+deny_warnings = true
+verbosity = 3
+isolate = true
+libs = ["node_modules"]
+fs_permissions = [
+  { access = "read", path = "broadcast" },
+  { access = "read", path = "node_modules" },
+]
+
+[fmt]
+tab_width = 2
+sort_imports = true
+bracket_spacing = true
+number_underscore = "thousands"

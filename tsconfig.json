@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
-    "lib": ["ES2020"],
-    "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "declaration": true,
-    "declarationMap": true,
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "Bundler",
     "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "declarationMap": true,
     "skipLibCheck": true,
+    "declaration": true,
     "pretty": true,
     "strict": true,
-    "outDir": "cjs"
+    "noEmit": true,
   },
   "include": ["src"]
 }

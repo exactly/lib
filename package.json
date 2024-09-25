@@ -6,7 +6,6 @@
   "scripts": {
     "prepare": "pnpm build",
     "build": "pkgroll --sourcemap",
-    "build:esm": "tsc --module ES2020 --outDir esm && echo '{ \"type\": \"module\" }' > esm/package.json",
     "test": "pnpm run --aggregate-output /test:/",
     "test:vi": "vitest run",
     "test:lint": "eslint ."

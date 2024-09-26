@@ -4,7 +4,6 @@ import divWad from "../fixed-point-math/divWad.js";
 import min from "../fixed-point-math/min.js";
 import mulDiv from "../fixed-point-math/mulDiv.js";
 
-/// returns 0n if the market is not found
 export default function withdrawLimit(
   data: AccountLiquidityData,
   market: string,
@@ -12,7 +11,7 @@ export default function withdrawLimit(
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());
-  if (!marketData) return 0n;
+  if (!marketData) throw new Error("market not found");
 
   const { decimals, usdPrice, adjustFactor, floatingDepositAssets } = marketData;
   const baseUnit = 10n ** BigInt(decimals);

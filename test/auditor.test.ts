@@ -3,7 +3,7 @@ import { describe, expect, inject, it } from "vitest";
 
 import { previewerAbi } from "./generated/contracts.js";
 import anvilClient from "./utils/anvilClient.js";
-import accountLiquidity from "../src/auditor/accountLiquidity.js";
+import accountLiquidity, { normalizeCollateral } from "../src/auditor/accountLiquidity.js";
 import healthFactor from "../src/auditor/healthFactor.js";
 import withdrawLimit from "../src/auditor/withdrawLimit.js";
 import divWad from "../src/fixed-point-math/divWad.js";
@@ -71,14 +71,33 @@ describe("with static data", () => {
 
   it("withdraw limit", () => {
     const { collateral, debt } = exactlyAccountLiquidity();
-    const limit = min(collateral - debt, collateral);
-    const normalizedLimit = mulDiv(
-      divWad(limit, exactly[0].adjustFactor),
-      10n ** BigInt(exactly[0].decimals),
+    const targetHF = BigInt(1.1 * 10 ** 18);
+    const minCollateral = mulWad(debt, targetHF);
+    const limit = min(collateral - minCollateral, collateral);
+    const normalizedLimit = normalizeCollateral(
+      limit,
       exactly[0].usdPrice,
+      10n ** BigInt(exactly[0].decimals),
+      exactly[0].adjustFactor,
     );
 
-    expect(normalizedLimit).toBe(withdrawLimit(exactly, exactly[0].market, 0));
+    expect(normalizedLimit).toBe(withdrawLimit(exactly, exactly[0].market, 0, targetHF));
+
+    const withdrawable = withdrawLimit(exactly, exactly[0].market, 0, targetHF);
+
+    const exaWithdrawn = [
+      {
+        ...exactly[0],
+        floatingDepositAssets: exactly[0].floatingDepositAssets - withdrawable,
+      },
+      ...exactly.slice(1),
+    ];
+
+    expect(healthFactor(exaWithdrawn, 0)).toBeGreaterThanOrEqual(targetHF);
+
+    const impossibleHF = healthFactor(exactly, 0) + 1n;
+
+    expect(withdrawLimit(exactly, exactly[0].market, 0, impossibleHF)).toBe(0n);
   });
 });
 

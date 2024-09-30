@@ -1,3 +1,4 @@
+import divWad from "../fixed-point-math/divWad.js";
 import divWadUp from "../fixed-point-math/divWadUp.js";
 import mulDiv from "../fixed-point-math/mulDiv.js";
 import mulDivUp from "../fixed-point-math/mulDivUp.js";
@@ -44,6 +45,15 @@ export function adjustCollateral(
   adjustFactor: bigint,
 ): bigint {
   return mulWad(mulDiv(floatingDepositAssets, usdPrice, baseUnit), adjustFactor);
+}
+
+export function normalizeCollateral(
+  adjustedCollateral: bigint,
+  usdPrice: bigint,
+  baseUnit: bigint,
+  adjustFactor: bigint,
+) {
+  return divWad(mulDiv(adjustedCollateral, baseUnit, usdPrice), adjustFactor);
 }
 
 export type AccountLiquidityData = readonly {

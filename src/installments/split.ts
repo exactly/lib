@@ -6,6 +6,7 @@ import abs from "../vector/abs.js";
 import add from "../vector/add.js";
 import fill from "../vector/fill.js";
 import mean from "../vector/mean.js";
+import mul from "../vector/mul.js";
 import mulDivUp from "../vector/mulDivUp.js";
 import powDiv from "../vector/powDiv.js";
 import sub from "../vector/sub.js";
@@ -67,12 +68,13 @@ export default function splitInstallments(
   const maturityFactors = rates.map(
     (_, index) => (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) / ONE_YEAR,
   );
+  const y = mul(installments, WAD);
   let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   error = 0n;
   do {
     const aux = add(mulDivUp(maturityFactors, effectiveRate, WAD), WAD);
-    const f = sum(mulDivUp(installments, WAD, aux)) - totalAmount;
-    const fp = -sum(mulDivUp(mulDivUp(installments, maturityFactors, WAD), WAD, powDiv(aux, 2n, WAD)));
+    const f = sum(mulDivUp(y, WAD, aux)) - totalAmount * WAD;
+    const fp = -sum(mulDivUp(y, maturityFactors, powDiv(aux, 2n, WAD)));
     const rateDiff = (-f * WAD) / fp;
     effectiveRate += rateDiff;
     error = rateDiff < 0n ? -rateDiff : rateDiff;

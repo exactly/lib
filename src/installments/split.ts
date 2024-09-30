@@ -69,8 +69,10 @@ export default function splitInstallments(
   );
   const y = mul(installments, WAD);
   let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  iterations = 0;
   error = 0n;
   do {
+    if (iterations++ >= maxIterations) throw new Error("MAX_ITERATIONS_EXCEEDED");
     const aux = add(mulDivUp(maturityFactors, effectiveRate, WAD), WAD);
     const f = sum(mulDivUp(y, WAD, aux)) - totalAmount * WAD;
     const fp = -sum(mulDivUp(y, maturityFactors, powDiv(aux, 2n, WAD)));

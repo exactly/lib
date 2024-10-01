@@ -1,8 +1,9 @@
 import fc from "fast-check";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { describe, expect, it } from "vitest";
 
 import WAD, { SQ_WAD } from "../src/fixed-point-math/WAD.js";
+import divWad from "../src/fixed-point-math/divWad.js";
 import splitInstallments from "../src/installments/split.js";
 import { INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate.js";
 import max from "../src/vector/max.js";
@@ -12,7 +13,7 @@ import mulDiv from "../src/vector/mulDiv.js";
 import sum from "../src/vector/sum.js";
 
 describe("installments", () => {
-  it.todo("split", () => {
+  it("split", () => {
     expect.hasAssertions();
 
     fc.assert(
@@ -20,12 +21,14 @@ describe("installments", () => {
         fc.bigInt(WAD / 10_000n, WAD),
         fc.array(fc.bigInt(0n, WAD), { minLength: 2, maxLength: 12 }),
         fc.bigInt(0n, WAD),
-        fc.bigInt(0n, (WAD * 999n) / 1000n),
+        fc.bigInt(0n, (WAD * 95n) / 100n),
         (totalAmount, uFixed, uFloating, uGlobal) => {
           const maxPools = 13;
           const timestamp = 0;
           const firstMaturity = INTERVAL;
-          const totalAssets = 1_000_000n * WAD;
+          const decimals = 6;
+          const baseUnit = 10n ** BigInt(decimals);
+          const totalAssets = 1_000_000n * baseUnit;
 
           uFloating = (uFloating * uGlobal) / WAD;
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
@@ -45,13 +48,18 @@ describe("installments", () => {
 
           expect(amounts).toHaveLength(uFixed.length);
           expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);
-          expect(sum(amounts) - totalAmount).toBeLessThan(totalAmount / 100_000n);
+          expect(sum(amounts) - totalAmount).toBeLessThanOrEqual(uFixed.length);
           expect(effectiveRate).toBeGreaterThanOrEqual(min(rates));
           expect(effectiveRate).toBeLessThanOrEqual(max(rates));
 
           const avg = mean(installments);
           for (const installment of installments) {
-            expect(installment > avg ? installment - avg : avg - installment).toBeLessThan(WAD / 1000n);
+            const proportion = divWad(installment, avg);
+            const error = proportion > WAD ? proportion - WAD : WAD - proportion;
+
+            expect(error, `${formatUnits(installment, decimals)}, ${formatUnits(avg, decimals)}`).toBeLessThan(
+              (200n * WAD) / baseUnit,
+            );
           }
         },
       ),

@@ -24,12 +24,7 @@ export default function splitInstallments(
   uGlobal: bigint,
   parameters: IRMParameters,
   timestamp = Math.floor(Date.now() / 1000),
-  {
-    power = (WAD * 60n) / 100n,
-    scaleFactor = (WAD * 95n) / 100n,
-    tolerance = WAD / 1_000_000_000n,
-    maxIterations = 66_666n,
-  } = {},
+  { power = (WAD * 60n) / 100n, scaleFactor = (WAD * 95n) / 100n, tolerance = 4n, maxIterations = 66_666n } = {},
 ) {
   const uGlobalAfter = uGlobal + (totalAmount * WAD - 1n) / totalAssets + 1n;
   const weight = max(

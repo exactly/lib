@@ -56,6 +56,10 @@ export function normalizeCollateral(
   return divWad(mulDiv(adjustedCollateral, baseUnit, usdPrice), adjustFactor);
 }
 
+export function normalizeDebt(adjustedDebt: bigint, usdPrice: bigint, baseUnit: bigint, adjustFactor: bigint) {
+  return mulDiv(mulWad(adjustedDebt, adjustFactor), baseUnit, usdPrice);
+}
+
 export type AccountLiquidityData = readonly {
   market: string;
   decimals: number;

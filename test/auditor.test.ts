@@ -3,7 +3,8 @@ import { describe, expect, inject, it } from "vitest";
 
 import { previewerAbi } from "./generated/contracts.js";
 import anvilClient from "./utils/anvilClient.js";
-import accountLiquidity, { normalizeCollateral } from "../src/auditor/accountLiquidity.js";
+import accountLiquidity, { normalizeCollateral, normalizeDebt } from "../src/auditor/accountLiquidity.js";
+import borrowLimit from "../src/auditor/borrowLimit.js";
 import healthFactor from "../src/auditor/healthFactor.js";
 import withdrawLimit from "../src/auditor/withdrawLimit.js";
 import divWad from "../src/fixed-point-math/divWad.js";
@@ -98,6 +99,39 @@ describe("with static data", () => {
     const impossibleHF = healthFactor(exactly, 0) + 1n;
 
     expect(withdrawLimit(exactly, exactly[0].market, 0, impossibleHF)).toBe(0n);
+  });
+
+  it("borrow limit", () => {
+    const { collateral, debt } = exactlyAccountLiquidity();
+    const targetHF = BigInt(1.1 * 10 ** 18);
+    const maxDebt = divWad(collateral, targetHF);
+    const maxNewDebt = maxDebt - debt;
+
+    const bLimit = borrowLimit(exactly, exactly[0].market, 0, targetHF);
+
+    expect(
+      normalizeDebt(maxNewDebt, exactly[0].usdPrice, 10n ** BigInt(exactly[0].decimals), exactly[0].adjustFactor),
+    ).toBe(borrowLimit(exactly, exactly[0].market, 0, targetHF));
+
+    const exaBorrowed = [
+      {
+        ...exactly[0],
+        floatingBorrowAssets: exactly[0].floatingBorrowAssets + bLimit,
+      },
+      ...exactly.slice(1),
+    ];
+
+    expect(healthFactor(exaBorrowed, 0)).toBeGreaterThanOrEqual(targetHF);
+
+    const exaBorrowedTooMuch = [
+      {
+        ...exactly[0],
+        floatingBorrowAssets: exactly[0].floatingBorrowAssets + bLimit + 1n,
+      },
+      ...exactly.slice(1),
+    ];
+
+    expect(healthFactor(exaBorrowedTooMuch, 0)).toBeLessThan(targetHF);
   });
 });
 

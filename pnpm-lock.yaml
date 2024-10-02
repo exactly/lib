@@ -17,8 +17,8 @@ importers:
         specifier: ^4.4.0
         version: 4.4.0(eslint@8.57.1)
       '@exactly/protocol':
-        specifier: exactly/protocol#d2b0caa
-        version: https://codeload.github.com/exactly/protocol/tar.gz/d2b0caa
+        specifier: exactly/protocol#d683f02
+        version: https://codeload.github.com/exactly/protocol/tar.gz/d683f02
       '@openzeppelin/contracts':
         specifier: ^5.0.2
         version: 5.0.2
@@ -597,8 +597,8 @@ packages:
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@exactly/protocol@https://codeload.github.com/exactly/protocol/tar.gz/d2b0caa':
-    resolution: {tarball: https://codeload.github.com/exactly/protocol/tar.gz/d2b0caa}
+  '@exactly/protocol@https://codeload.github.com/exactly/protocol/tar.gz/d683f02':
+    resolution: {tarball: https://codeload.github.com/exactly/protocol/tar.gz/d683f02}
     version: 0.2.19
     engines: {node: '>=18'}
 
@@ -3274,7 +3274,7 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
-  '@exactly/protocol@https://codeload.github.com/exactly/protocol/tar.gz/d2b0caa':
+  '@exactly/protocol@https://codeload.github.com/exactly/protocol/tar.gz/d683f02':
     dependencies:
       '@openzeppelin/contracts': 5.0.2
       '@openzeppelin/contracts-upgradeable': 5.0.2(@openzeppelin/contracts@5.0.2)

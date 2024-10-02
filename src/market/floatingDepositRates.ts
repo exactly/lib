@@ -5,11 +5,15 @@ import mulWad from "../fixed-point-math/mulWad.js";
 
 const YEAR_IN_SECONDS = 365n * 86_400n;
 
-export default function floatingDepositRates(snapshots: readonly MarketSnapshot[], timestamp: number, window: number) {
+export default function floatingDepositRates(
+  snapshots: readonly MarketSnapshot[],
+  timestamp: number,
+  elapsed = 10 * 60,
+) {
   return snapshots.map((snapshot) => {
-    const projectedTotalAssets = projectTotalAssets(snapshot, timestamp + window);
+    const projectedTotalAssets = projectTotalAssets(snapshot, timestamp + elapsed);
     const totalAssetsBefore = snapshot.totalAssets;
-    const assetsInYear = ((projectedTotalAssets - totalAssetsBefore) * YEAR_IN_SECONDS) / BigInt(window);
+    const assetsInYear = ((projectedTotalAssets - totalAssetsBefore) * YEAR_IN_SECONDS) / BigInt(elapsed);
     return { market: snapshot.market, rate: divWad(assetsInYear, totalAssetsBefore) };
   });
 }

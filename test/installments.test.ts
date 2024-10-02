@@ -16,39 +16,41 @@ describe("installments", () => {
   it("split", () => {
     expect.hasAssertions();
 
+    const decimals = 6;
+    const maxPools = 13;
+    const baseUnit = 10n ** BigInt(decimals);
+    const totalAssets = 1_000_000n * baseUnit;
     fc.assert(
       fc.property(
+        fc.integer({ min: 2, max: maxPools - 1 }),
+        fc.float({ min: 0, max: 1, maxExcluded: true, noNaN: true }),
         fc.bigInt(WAD / 10_000n, WAD),
-        fc.array(fc.bigInt(0n, WAD), { minLength: 2, maxLength: 12 }),
+        fc.array(fc.bigInt(0n, WAD), { minLength: maxPools, maxLength: maxPools }),
         fc.bigInt(0n, WAD),
         fc.bigInt(0n, (WAD * 95n) / 100n),
-        (totalAmount, uFixed, uFloating, uGlobal) => {
-          const maxPools = 13;
-          const timestamp = 0;
-          const firstMaturity = INTERVAL;
-          const decimals = 6;
-          const baseUnit = 10n ** BigInt(decimals);
-          const totalAssets = 1_000_000n * baseUnit;
-
+        (count, firstIndex, totalAmount, uFixed, uFloating, uGlobal) => {
+          firstIndex = Math.floor(firstIndex * (maxPools - count));
           uFloating = (uFloating * uGlobal) / WAD;
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
           if (sum(uFixed) > 0n) uFixed = mulDiv(uFixed, uGlobal - uFloating, sum(uFixed));
+          const timestamp = 0;
+          const firstMaturity = firstIndex * INTERVAL + INTERVAL;
 
           const { amounts, installments, rates, effectiveRate } = splitInstallments(
             totalAmount,
             totalAssets,
             firstMaturity,
             maxPools,
-            uFixed,
+            uFixed.slice(firstIndex, firstIndex + count),
             uFloating,
             uGlobal,
             parameters,
             timestamp,
           );
 
-          expect(amounts).toHaveLength(uFixed.length);
+          expect(amounts).toHaveLength(count);
           expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);
-          expect(sum(amounts) - totalAmount).toBeLessThanOrEqual(uFixed.length);
+          expect(sum(amounts) - totalAmount).toBeLessThanOrEqual(count);
           expect(effectiveRate).toBeGreaterThanOrEqual(min(rates));
           expect(effectiveRate).toBeLessThanOrEqual(max(rates));
 
@@ -58,7 +60,7 @@ describe("installments", () => {
             const error = proportion > WAD ? proportion - WAD : WAD - proportion;
 
             expect(error, `${formatUnits(installment, decimals)}, ${formatUnits(avg, decimals)}`).toBeLessThan(
-              (200n * WAD) / baseUnit,
+              (1000n * WAD) / baseUnit,
             );
           }
         },

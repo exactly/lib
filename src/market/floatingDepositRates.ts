@@ -7,7 +7,7 @@ const YEAR_IN_SECONDS = 365n * 86_400n;
 
 export default function floatingDepositRates(
   snapshots: readonly MarketSnapshot[],
-  timestamp: number,
+  timestamp = Math.floor(Date.now() / 1000),
   elapsed = 10 * 60,
 ) {
   return snapshots.map((snapshot) => {

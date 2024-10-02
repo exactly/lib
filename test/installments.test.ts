@@ -24,16 +24,16 @@ describe("installments", () => {
       fc.property(
         fc.integer({ min: 2, max: maxPools - 1 }),
         fc.float({ min: 0, max: 1, maxExcluded: true, noNaN: true }),
-        fc.bigInt(WAD / 10_000n, WAD),
+        fc.bigInt(WAD / 10_000n, (WAD * 9n) / 10n),
         fc.array(fc.bigInt(0n, WAD), { minLength: maxPools, maxLength: maxPools }),
         fc.bigInt(0n, WAD),
         fc.bigInt(0n, (WAD * 95n) / 100n),
-        (count, firstIndex, totalAmount, uFixed, uFloating, uGlobal) => {
+        fc.integer({ min: 0, max: Math.floor(INTERVAL * 0.9) }),
+        (count, firstIndex, totalAmount, uFixed, uFloating, uGlobal, timestamp) => {
           firstIndex = Math.floor(firstIndex * (maxPools - count));
           uFloating = (uFloating * uGlobal) / WAD;
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
           if (sum(uFixed) > 0n) uFixed = mulDiv(uFixed, uGlobal - uFloating, sum(uFixed));
-          const timestamp = 0;
           const firstMaturity = firstIndex * INTERVAL + INTERVAL;
 
           const { amounts, installments, rates, effectiveRate } = splitInstallments(

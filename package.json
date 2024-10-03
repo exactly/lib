@@ -50,7 +50,6 @@
     "execa": "^9.4.0",
     "fast-check": "^3.22.0",
     "forge-std": "foundry-rs/forge-std#v1.9.3",
-    "pkgroll": "^2.5.0",
     "prettier": "^3.3.3",
     "prool": "^0.0.16",
     "solmate": "transmissions11/solmate#v7",

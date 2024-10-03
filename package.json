@@ -14,8 +14,9 @@
     "test:ts:dev": "tsc -p tsconfig.dev.json",
     "test:lint": "eslint ."
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "src"

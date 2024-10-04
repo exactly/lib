@@ -27,6 +27,7 @@ module.exports = {
     "unicorn/filename-case": "off", // use default export name
     "unicorn/no-useless-undefined": ["error", { checkArrowFunctionBody: false }], // @typescript-eslint/no-empty-function
     "unicorn/number-literal-case": "off", // incompatible with prettier
+    "unicorn/prefer-math-min-max": "off", // incompatible with bigint
     "unicorn/switch-case-braces": ["error", "avoid"], // consistently avoid braces
   },
   overrides: [

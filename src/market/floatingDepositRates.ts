@@ -33,8 +33,9 @@ function projectTotalAssets(snapshot: MarketSnapshot, timestamp: number) {
     treasuryFeeRate,
   } = snapshot;
   const elapsedAccumulator = BigInt(timestamp - lastAccumulatorAccrual);
-  const denominator = earningsAccumulator + mulWad(earningsAccumulatorSmoothFactor, BigInt(maxFuturePools) * interval);
-  const accumulatedEarnings = denominator === 0n ? 0n : mulDiv(earningsAccumulator, elapsedAccumulator, denominator);
+  const accumulatedEarnings =
+    (earningsAccumulator * elapsedAccumulator) /
+    (elapsedAccumulator + mulWad(earningsAccumulatorSmoothFactor, BigInt(maxFuturePools) * interval));
 
   const newDebt = mulWad(
     floatingDebt,

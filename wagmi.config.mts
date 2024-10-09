@@ -1,14 +1,19 @@
-import MarketUSDC from "@exactly/protocol/deployments/op-sepolia/MarketUSDC.json" with { type: "json" };
-import Previewer from "@exactly/protocol/deployments/op-sepolia/Previewer.json" with { type: "json" };
-import RatePreviewer from "@exactly/protocol/deployments/op-sepolia/RatePreviewer.json" with { type: "json" };
 import { defineConfig } from "@wagmi/cli";
+import { readFileSync } from "node:fs";
 import type { Abi } from "viem";
 
 export default defineConfig({
   out: "test/generated/contracts.ts",
   contracts: [
-    { name: "Previewer", abi: Previewer.abi as Abi },
-    { name: "RatePreviewer", abi: RatePreviewer.abi as Abi },
-    { name: "MarketUSDC", abi: MarketUSDC.abi as Abi },
+    { name: "Previewer", abi: loadDeployment("Previewer").abi },
+    { name: "RatePreviewer", abi: loadDeployment("RatePreviewer").abi },
+    { name: "MarketUSDC", abi: loadDeployment("MarketUSDC").abi },
   ],
 });
+
+function loadDeployment(contract: string) {
+  return JSON.parse(readFileSync(`node_modules/@exactly/protocol/deployments/op-sepolia/${contract}.json`, "utf8")) as {
+    address: string;
+    abi: Abi;
+  };
+}

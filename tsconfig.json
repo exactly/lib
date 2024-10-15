@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleDetection": "force",
     "moduleResolution": "Bundler",
+    "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,

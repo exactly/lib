@@ -1,4 +1,4 @@
-import type { IRMBaseParameters } from "./Parameters.ts";
+import type { IRMBaseParameters } from "./Parameters.js";
 import MAX_UINT256 from "../fixed-point-math/MAX_UINT256.js";
 import WAD from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
@@ -40,4 +40,4 @@ export default function baseRate(
 }
 
 export { default as WAD } from "../fixed-point-math/WAD.js";
-export type { default as IRMParameters, IRMBaseParameters } from "./Parameters.ts";
+export type { default as IRMParameters, IRMBaseParameters } from "./Parameters.js";

@@ -1,4 +1,4 @@
-import type IRMParameters from "./Parameters.ts";
+import type IRMParameters from "./Parameters.js";
 import baseRate from "./baseRate.js";
 import WAD, { SQ_WAD, TWO_WAD } from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
@@ -42,4 +42,4 @@ export default function fixedRate(
 }
 
 export { default as WAD } from "../fixed-point-math/WAD.js";
-export type { default as IRMParameters } from "./Parameters.ts";
+export type { default as IRMParameters } from "./Parameters.js";

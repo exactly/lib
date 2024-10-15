@@ -27,7 +27,7 @@ export { default as fixedUtilization } from "./interest-rate-model/fixedUtilizat
 export { default as floatingRate } from "./interest-rate-model/floatingRate.js";
 export { default as floatingUtilization } from "./interest-rate-model/floatingUtilization.js";
 export { default as globalUtilization } from "./interest-rate-model/globalUtilization.js";
-export type { default as IRMParameters, IRMFloatingParameters } from "./interest-rate-model/Parameters.ts";
+export type { default as IRMParameters, IRMFloatingParameters } from "./interest-rate-model/Parameters.js";
 
 export { default as floatingDepositRates } from "./market/floatingDepositRates.js";
 

@@ -1,6 +1,6 @@
 import type IRMParameters from "./Parameters.js";
 import baseRate from "./baseRate.js";
-import fixedRate, { INTERVAL } from "./fixedRate.js";
+import fixedRate, { MATURITY_INTERVAL } from "./fixedRate.js";
 
 export default function fixedRates(
   firstMaturity: number,
@@ -13,7 +13,7 @@ export default function fixedRates(
 ) {
   const base = baseRate(uFloating, uGlobal, parameters);
   return uFixed.map((uFixedBefore, index) => {
-    const maturity = firstMaturity + index * INTERVAL;
+    const maturity = firstMaturity + index * MATURITY_INTERVAL;
     fixedRate(maturity, maxPools, uFixedBefore, uFloating, uGlobal, parameters, timestamp, base);
   });
 }

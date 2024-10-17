@@ -5,7 +5,7 @@ import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
 import sqrt from "../fixed-point-math/sqrt.js";
 
-export const INTERVAL = 4 * 7 * 86_400;
+export const MATURITY_INTERVAL = 4 * 7 * 86_400;
 
 export default function fixedRate(
   maturity: number,
@@ -32,7 +32,7 @@ export default function fixedRate(
     z = (natPools * sqrt(fixedFactor * WAD)) / WAD + ((WAD - natPools) * fixedFactor) / WAD - WAD;
   }
 
-  const maturityFactor = (BigInt(maturity - timestamp) * WAD) / BigInt(maxPools * INTERVAL);
+  const maturityFactor = (BigInt(maturity - timestamp) * WAD) / BigInt(maxPools * MATURITY_INTERVAL);
 
   const spread =
     WAD + (expWad((maturitySpeed * lnWad(maturityFactor)) / WAD) * (timePreference + (spreadFactor * z) / WAD)) / WAD;

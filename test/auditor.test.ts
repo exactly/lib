@@ -12,7 +12,7 @@ import divWadUp from "../src/fixed-point-math/divWadUp.js";
 import min from "../src/fixed-point-math/min.js";
 import mulDiv from "../src/fixed-point-math/mulDiv.js";
 import mulWad from "../src/fixed-point-math/mulWad.js";
-import { INTERVAL } from "../src/interest-rate-model/fixedRate.js";
+import { MATURITY_INTERVAL } from "../src/interest-rate-model/fixedRate.js";
 
 describe("with static data", () => {
   const exactly = [
@@ -25,7 +25,10 @@ describe("with static data", () => {
       floatingBorrowAssets: parseUnits("1000", 6),
       floatingDepositAssets: parseUnits("10000", 6),
       fixedBorrowPositions: [
-        { maturity: BigInt(INTERVAL), position: { principal: parseUnits("990", 6), fee: parseUnits("10", 6) } },
+        {
+          maturity: BigInt(MATURITY_INTERVAL),
+          position: { principal: parseUnits("990", 6), fee: parseUnits("10", 6) },
+        },
       ],
       penaltyRate: parseUnits("0.000000052083333333", 18),
     },
@@ -38,7 +41,10 @@ describe("with static data", () => {
       floatingBorrowAssets: parseUnits("1", 18),
       floatingDepositAssets: parseUnits("1", 18),
       fixedBorrowPositions: [
-        { maturity: BigInt(INTERVAL), position: { principal: parseUnits("0.9", 18), fee: parseUnits("0.1", 18) } },
+        {
+          maturity: BigInt(MATURITY_INTERVAL),
+          position: { principal: parseUnits("0.9", 18), fee: parseUnits("0.1", 18) },
+        },
       ],
       penaltyRate: parseUnits("0.000000052083333333", 18),
     },

@@ -1,7 +1,7 @@
 import WAD from "../fixed-point-math/WAD.js";
 import expWad from "../fixed-point-math/expWad.js";
 import lnWad from "../fixed-point-math/lnWad.js";
-import fixedRate, { INTERVAL, type IRMParameters } from "../interest-rate-model/fixedRate.js";
+import fixedRate, { MATURITY_INTERVAL, type IRMParameters } from "../interest-rate-model/fixedRate.js";
 import abs from "../vector/abs.js";
 import add from "../vector/add.js";
 import fill from "../vector/fill.js";
@@ -42,14 +42,14 @@ export default function splitInstallments(
     let uGlobalAccumulator = uGlobal;
     rates = uFixed.map((uFixedBefore, index) => {
       const amount = amounts[index]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-      const maturity = firstMaturity + index * INTERVAL;
+      const maturity = firstMaturity + index * MATURITY_INTERVAL;
       const uFixedAfter = amount ? uFixedBefore + (amount * WAD - 1n) / totalAssets + 1n : uFixedBefore;
       if (amount) uGlobalAccumulator += (amount * WAD - 1n) / totalAssets + 1n;
       return fixedRate(maturity, maxPools, uFixedAfter, uFloating, uGlobalAccumulator, parameters, timestamp);
     });
     installments = rates.map((rate, index) => {
       const amount = amounts[index]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
-      const maturity = firstMaturity + index * INTERVAL;
+      const maturity = firstMaturity + index * MATURITY_INTERVAL;
       return amount + (amount * rate * BigInt(maturity - timestamp)) / (WAD * ONE_YEAR);
     });
 
@@ -60,7 +60,7 @@ export default function splitInstallments(
   } while (error >= tolerance);
 
   const maturityFactors = rates.map(
-    (_, index) => (BigInt(firstMaturity + index * INTERVAL - timestamp) * WAD) / ONE_YEAR,
+    (_, index) => (BigInt(firstMaturity + index * MATURITY_INTERVAL - timestamp) * WAD) / ONE_YEAR,
   );
   const y = mul(installments, WAD);
   let effectiveRate = rates[0]!; // eslint-disable-line @typescript-eslint/no-non-null-assertion

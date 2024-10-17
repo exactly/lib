@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import WAD, { SQ_WAD } from "../src/fixed-point-math/WAD.js";
 import divWad from "../src/fixed-point-math/divWad.js";
 import splitInstallments from "../src/installments/split.js";
-import { INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate.js";
+import { MATURITY_INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate.js";
 import max from "../src/vector/max.js";
 import mean from "../src/vector/mean.js";
 import min from "../src/vector/min.js";
@@ -28,13 +28,13 @@ describe("installments", () => {
         fc.array(fc.bigInt(0n, WAD), { minLength: maxPools, maxLength: maxPools }),
         fc.bigInt(0n, WAD),
         fc.bigInt(0n, (WAD * 95n) / 100n),
-        fc.integer({ min: 0, max: Math.floor(INTERVAL * 0.9) }),
+        fc.integer({ min: 0, max: Math.floor(MATURITY_INTERVAL * 0.9) }),
         (count, firstIndex, totalAmount, uFixed, uFloating, uGlobal, timestamp) => {
           firstIndex = Math.floor(firstIndex * (maxPools - count));
           uFloating = (uFloating * uGlobal) / WAD;
           totalAmount = (totalAmount * totalAssets * (WAD - uGlobal)) / SQ_WAD;
           if (sum(uFixed) > 0n) uFixed = mulDiv(uFixed, uGlobal - uFloating, sum(uFixed));
-          const firstMaturity = firstIndex * INTERVAL + INTERVAL;
+          const firstMaturity = firstIndex * MATURITY_INTERVAL + MATURITY_INTERVAL;
 
           const { amounts, installments, rates, effectiveRate } = splitInstallments(
             totalAmount,

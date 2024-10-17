@@ -1,12 +1,12 @@
 import { parseUnits } from "viem";
 import { describe, expect, it } from "vitest";
 
-import fixedRate, { INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate.js";
+import fixedRate, { MATURITY_INTERVAL, type IRMParameters } from "../src/interest-rate-model/fixedRate.js";
 import floatingRate from "../src/interest-rate-model/floatingRate.js";
 
 describe("interest rate model", () => {
   it("fixed rate", () => {
-    expect(fixedRate(INTERVAL, 6, parseUnits("0.75", 18), 0n, parseUnits("0.75", 18), parameters, 1)).toBe(
+    expect(fixedRate(MATURITY_INTERVAL, 6, parseUnits("0.75", 18), 0n, parseUnits("0.75", 18), parameters, 1)).toBe(
       63726888252924763n, // eslint-disable-line unicorn/numeric-separators-style
     );
   });

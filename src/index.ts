@@ -21,7 +21,7 @@ export { default as WAD } from "./fixed-point-math/WAD.js";
 export { default as splitInstallments } from "./installments/split.js";
 
 export { default as baseRate } from "./interest-rate-model/baseRate.js";
-export { default as fixedRate, INTERVAL } from "./interest-rate-model/fixedRate.js";
+export { default as fixedRate, MATURITY_INTERVAL } from "./interest-rate-model/fixedRate.js";
 export { default as fixedRates } from "./interest-rate-model/fixedRates.js";
 export { default as fixedUtilization } from "./interest-rate-model/fixedUtilization.js";
 export { default as floatingRate } from "./interest-rate-model/floatingRate.js";

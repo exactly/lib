@@ -49,8 +49,7 @@ describe("installments", () => {
           );
 
           expect(amounts).toHaveLength(count);
-          expect(sum(amounts)).toBeGreaterThanOrEqual(totalAmount);
-          expect(sum(amounts) - totalAmount).toBeLessThanOrEqual(count);
+          expect(sum(amounts)).toStrictEqual(totalAmount);
           expect(effectiveRate).toBeGreaterThanOrEqual(min(rates));
           expect(effectiveRate).toBeLessThanOrEqual(max(rates));
 

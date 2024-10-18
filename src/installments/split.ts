@@ -56,6 +56,8 @@ export default function splitInstallments(
     const diffs = sub(installments, mean(installments));
     amounts = sub(amounts, mulDivUp(diffs, weight, WAD));
     amounts = mulDivUp(amounts, totalAmount, sum(amounts));
+    const excess = sum(amounts) - totalAmount;
+    for (let index = 0; index < excess; ++index) amounts[index]! -= 1n; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     error = mean(mulDivUp(abs(diffs), weight, WAD));
   } while (error >= tolerance);
 

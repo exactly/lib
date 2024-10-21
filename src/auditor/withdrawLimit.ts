@@ -1,11 +1,12 @@
 import type { AccountLiquidityData } from "./accountLiquidity.js";
 import accountLiquidity, { adjustCollateral, normalizeCollateral } from "./accountLiquidity.js";
+import WAD from "../fixed-point-math/WAD.js";
 import mulWad from "../fixed-point-math/mulWad.js";
 
 export default function withdrawLimit(
   data: AccountLiquidityData,
   market: string,
-  targetHealthFactor = BigInt(1.25 * 10 ** 18),
+  targetHealthFactor = (WAD * 105n) / 100n,
   timestamp = Math.floor(Date.now() / 1000),
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);

@@ -9,7 +9,7 @@ export default function fixedRates(
   uFloating: bigint,
   uGlobal: bigint,
   parameters: IRMParameters,
-  timestamp = Math.floor(Date.now() / 1000),
+  timestamp?: number,
 ) {
   const base = baseRate(uFloating, uGlobal, parameters);
   return uFixed.map((uFixedBefore, index) => {

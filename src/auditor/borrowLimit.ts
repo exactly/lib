@@ -6,7 +6,7 @@ export default function borrowLimit(
   data: AccountLiquidityData,
   market: string,
   targetHealthFactor = (WAD * 105n) / 100n,
-  timestamp = Math.floor(Date.now() / 1000),
+  timestamp?: number,
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());

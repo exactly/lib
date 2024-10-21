@@ -4,8 +4,8 @@ import divWad from "../fixed-point-math/divWad.js";
 export default function borrowLimit(
   data: AccountLiquidityData,
   market: string,
-  timestamp = Math.floor(Date.now() / 1000),
   targetHealthFactor = BigInt(1.25 * 10 ** 18),
+  timestamp = Math.floor(Date.now() / 1000),
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());

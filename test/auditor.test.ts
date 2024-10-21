@@ -7,6 +7,7 @@ import accountLiquidity, { normalizeCollateral, normalizeDebt } from "../src/aud
 import borrowLimit from "../src/auditor/borrowLimit.js";
 import healthFactor from "../src/auditor/healthFactor.js";
 import withdrawLimit from "../src/auditor/withdrawLimit.js";
+import WAD from "../src/fixed-point-math/WAD.js";
 import divWad from "../src/fixed-point-math/divWad.js";
 import divWadUp from "../src/fixed-point-math/divWadUp.js";
 import min from "../src/fixed-point-math/min.js";
@@ -55,7 +56,7 @@ describe("with static data", () => {
     return {
       collateral:
         mulDiv(parseUnits("10000", 6), parseUnits("0.91", 18), usdcBaseUnit) +
-        mulDiv(mulWad(parseUnits("1", 18), parseUnits("2500", 18)), parseUnits("0.86", 18), 10n ** 18n),
+        mulDiv(mulWad(parseUnits("1", 18), parseUnits("2500", 18)), parseUnits("0.86", 18), WAD),
       debt:
         divWadUp(parseUnits("2000", 18), parseUnits("0.91", 18)) +
         divWadUp(parseUnits("5000", 18), parseUnits("0.86", 18)),
@@ -88,9 +89,9 @@ describe("with static data", () => {
       exactly[0].adjustFactor,
     );
 
-    expect(normalizedLimit).toBe(withdrawLimit(exactly, exactly[0].market, 0, targetHF));
+    expect(normalizedLimit).toBe(withdrawLimit(exactly, exactly[0].market, targetHF, 0));
 
-    const withdrawable = withdrawLimit(exactly, exactly[0].market, 0, targetHF);
+    const withdrawable = withdrawLimit(exactly, exactly[0].market, targetHF, 0);
 
     const exaWithdrawn = [
       {
@@ -104,7 +105,7 @@ describe("with static data", () => {
 
     const impossibleHF = healthFactor(exactly, 0) + 1n;
 
-    expect(withdrawLimit(exactly, exactly[0].market, 0, impossibleHF)).toBe(0n);
+    expect(withdrawLimit(exactly, exactly[0].market, impossibleHF, 0)).toBe(0n);
   });
 
   it("borrow limit", () => {
@@ -113,11 +114,11 @@ describe("with static data", () => {
     const maxDebt = divWad(collateral, targetHF);
     const maxNewDebt = maxDebt - debt;
 
-    const bLimit = borrowLimit(exactly, exactly[0].market, 0, targetHF);
+    const bLimit = borrowLimit(exactly, exactly[0].market, targetHF, 0);
 
     expect(
       normalizeDebt(maxNewDebt, exactly[0].usdPrice, 10n ** BigInt(exactly[0].decimals), exactly[0].adjustFactor),
-    ).toBe(borrowLimit(exactly, exactly[0].market, 0, targetHF));
+    ).toBe(borrowLimit(exactly, exactly[0].market, targetHF, 0));
 
     const exaBorrowed = [
       {
@@ -158,6 +159,6 @@ describe("with previewer data", async () => {
   });
 
   it("withdraw limit", () => {
-    withdrawLimit(exactly, inject("MarketUSDC"), 0);
+    withdrawLimit(exactly, inject("MarketUSDC"), WAD, 0);
   });
 });

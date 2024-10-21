@@ -5,8 +5,8 @@ import mulWad from "../fixed-point-math/mulWad.js";
 export default function withdrawLimit(
   data: AccountLiquidityData,
   market: string,
-  timestamp = Math.floor(Date.now() / 1000),
   targetHealthFactor = BigInt(1.25 * 10 ** 18),
+  timestamp = Math.floor(Date.now() / 1000),
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());

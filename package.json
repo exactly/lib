@@ -4,7 +4,6 @@
   "homepage": "https://exact.ly",
   "repository": "github:exactly/lib",
   "scripts": {
-    "prepare": "pnpm run --aggregate-output /prepare:/",
     "prepare:build": "pnpm build",
     "prepare:test": "wagmi generate",
     "build": "tsup",

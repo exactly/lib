@@ -16,9 +16,9 @@ export { default as mulDivUp } from "./fixed-point-math/mulDivUp.js";
 export { default as mulWad } from "./fixed-point-math/mulWad.js";
 export { default as mulWadUp } from "./fixed-point-math/mulWadUp.js";
 export { default as sqrt } from "./fixed-point-math/sqrt.js";
-export { default as WAD } from "./fixed-point-math/WAD.js";
+export { default as WAD, SQ_WAD, TWO_WAD } from "./fixed-point-math/WAD.js";
 
-export { default as effectiveRate } from "./installments/effectiveRate.js";
+export { default as effectiveRate, ONE_YEAR } from "./installments/effectiveRate.js";
 export { default as splitInstallments } from "./installments/split.js";
 
 export { default as baseRate } from "./interest-rate-model/baseRate.js";

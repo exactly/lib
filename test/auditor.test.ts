@@ -3,7 +3,7 @@ import { describe, expect, inject, it } from "vitest";
 
 import { previewerAbi } from "./generated/contracts.js";
 import anvilClient from "./utils/anvilClient.js";
-import accountLiquidity, { normalizeCollateral, normalizeDebt } from "../src/auditor/accountLiquidity.js";
+import accountLiquidity, { adjustDebt, normalizeCollateral, normalizeDebt } from "../src/auditor/accountLiquidity.js";
 import borrowLimit from "../src/auditor/borrowLimit.js";
 import healthFactor from "../src/auditor/healthFactor.js";
 import withdrawLimit from "../src/auditor/withdrawLimit.js";
@@ -30,6 +30,10 @@ describe("with static data", () => {
           maturity: BigInt(MATURITY_INTERVAL),
           position: { principal: parseUnits("990", 6), fee: parseUnits("10", 6) },
         },
+        {
+          maturity: BigInt(MATURITY_INTERVAL * 2),
+          position: { principal: parseUnits("990", 6), fee: parseUnits("10", 6) },
+        },
       ],
       penaltyRate: parseUnits("0.000000052083333333", 18),
     },
@@ -43,7 +47,7 @@ describe("with static data", () => {
       floatingDepositAssets: parseUnits("1", 18),
       fixedBorrowPositions: [
         {
-          maturity: BigInt(MATURITY_INTERVAL),
+          maturity: BigInt(MATURITY_INTERVAL * 2),
           position: { principal: parseUnits("0.9", 18), fee: parseUnits("0.1", 18) },
         },
       ],
@@ -58,7 +62,7 @@ describe("with static data", () => {
         mulDiv(parseUnits("10000", 6), parseUnits("0.91", 18), usdcBaseUnit) +
         mulDiv(mulWad(parseUnits("1", 18), parseUnits("2500", 18)), parseUnits("0.86", 18), WAD),
       debt:
-        divWadUp(parseUnits("2000", 18), parseUnits("0.91", 18)) +
+        divWadUp(parseUnits("3000", 18), parseUnits("0.91", 18)) +
         divWadUp(parseUnits("5000", 18), parseUnits("0.86", 18)),
     };
   }
@@ -68,6 +72,18 @@ describe("with static data", () => {
     const { adjCollateral, adjDebt } = accountLiquidity(exactly, 0);
 
     expect(adjCollateral).toBe(collateral);
+    expect(adjDebt).toBe(debt);
+  });
+
+  it("account liquidity with due maturity", () => {
+    let { debt } = exactlyAccountLiquidity();
+    const dueTime = 420;
+    const { adjDebt } = accountLiquidity(exactly, MATURITY_INTERVAL + dueTime);
+    const { penaltyRate, fixedBorrowPositions, usdPrice, decimals, adjustFactor } = exactly[0];
+    const positionAssets = fixedBorrowPositions[0].position.principal + fixedBorrowPositions[0].position.fee;
+    const penalties = mulWad(positionAssets, BigInt(dueTime) * penaltyRate);
+    debt += adjustDebt(penalties, usdPrice, 10n ** BigInt(decimals), adjustFactor);
+
     expect(adjDebt).toBe(debt);
   });
 

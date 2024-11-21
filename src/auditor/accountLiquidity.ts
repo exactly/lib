@@ -30,9 +30,9 @@ export default function accountLiquidity(
     for (const { position, maturity } of fixedBorrowPositions) {
       const positionAssets = position.principal + position.fee;
       totalDebt += positionAssets;
-      if (timestamp > maturity) totalDebt += mulWad(positionAssets, BigInt(timestamp) - maturity * penaltyRate);
+      if (timestamp > maturity) totalDebt += mulWad(positionAssets, (BigInt(timestamp) - maturity) * penaltyRate);
     }
-    adjDebt += divWadUp(mulDivUp(totalDebt, usdPrice, baseUnit), adjustFactor);
+    adjDebt += adjustDebt(totalDebt, usdPrice, baseUnit, adjustFactor);
   }
 
   return { adjCollateral, adjDebt };
@@ -45,6 +45,10 @@ export function adjustCollateral(
   adjustFactor: bigint,
 ): bigint {
   return mulWad(mulDiv(floatingDepositAssets, usdPrice, baseUnit), adjustFactor);
+}
+
+export function adjustDebt(debt: bigint, usdPrice: bigint, baseUnit: bigint, adjustFactor: bigint): bigint {
+  return divWadUp(mulDivUp(debt, usdPrice, baseUnit), adjustFactor);
 }
 
 export function normalizeCollateral(

@@ -22,4 +22,4 @@ export type IRMBaseParameters = Prettify<
 
 export type IRMFloatingParameters = Prettify<IRMBaseParameters & Pick<IRMParameters, "maxRate">>;
 
-type Prettify<T> = { [K in keyof T]: Prettify<T[K]> } & {}; // eslint-disable-line @typescript-eslint/no-restricted-types
+type Prettify<T> = { [K in keyof T]: Prettify<T[K]> } & {};

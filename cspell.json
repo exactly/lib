@@ -1,0 +1,20 @@
+{
+  "language": "en",
+  "ignorePaths": [
+    ".github/matcher.json",
+    "cspell.json",
+    "broadcast",
+    "patches",
+    "pnpm-lock.yaml"
+  ],
+  "words": [
+    "anvil",
+    "automine",
+    "cruzdanilo",
+    "prool",
+    "solmate",
+    "valibot",
+    "viem",
+    "wagmi"
+  ]
+}

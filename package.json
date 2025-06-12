@@ -12,6 +12,7 @@
     "test:vi": "vitest run",
     "test:ts:lib": "tsc",
     "test:ts:dev": "tsc -p tsconfig.dev.json",
+    "test:spell": "cspell --gitignore '**' '.changeset/**' '.cursor/**' '.github/**' '.eslintrc.*'",
     "test:lint": "eslint --max-warnings 0 ."
   },
   "main": "dist/index.js",

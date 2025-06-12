@@ -6,5 +6,5 @@
     "checkJs": true,
     "allowJs": true
   },
-  "include": ["test", "*.config.mts", "*.config.mjs"]
+  "include": ["test", "*.config.mts", "*.config.mjs", ".changeset/commit.config.cjs"]
 }

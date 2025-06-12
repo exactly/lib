@@ -22,7 +22,7 @@ describe("floating deposit rate", () => {
 
     expect(usdcSnapshot).toBeDefined();
 
-    // eslint-disable-next-line @vitest/no-conditional-in-test -- already expected to be defined
+    // eslint-disable-next-line vitest/no-conditional-in-test -- already expected to be defined
     if (!usdcSnapshot) return;
 
     const block = await anvilClient.getBlock();

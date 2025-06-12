@@ -7,6 +7,7 @@ import accountLiquidity, { adjustDebt, normalizeCollateral, normalizeDebt } from
 import borrowLimit from "../src/auditor/borrowLimit.js";
 import healthFactor from "../src/auditor/healthFactor.js";
 import withdrawLimit from "../src/auditor/withdrawLimit.js";
+import MAX_UINT256 from "../src/fixed-point-math/MAX_UINT256.js";
 import WAD from "../src/fixed-point-math/WAD.js";
 import divWad from "../src/fixed-point-math/divWad.js";
 import divWadUp from "../src/fixed-point-math/divWadUp.js";
@@ -167,14 +168,14 @@ describe("with previewer data", async () => {
   });
 
   it("account liquidity", () => {
-    accountLiquidity(exactly, 0);
+    expect(accountLiquidity(exactly, 0)).toStrictEqual({ adjCollateral: 0n, adjDebt: 0n });
   });
 
   it("health factor", () => {
-    healthFactor(exactly, 0);
+    expect(healthFactor(exactly, 0)).toBe(MAX_UINT256);
   });
 
   it("withdraw limit", () => {
-    withdrawLimit(exactly, inject("MarketUSDC"), WAD, 0);
+    expect(withdrawLimit(exactly, inject("MarketUSDC"), WAD, 0)).toBe(0n);
   });
 });

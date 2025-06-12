@@ -16,6 +16,7 @@ jobs:
           node-version: ">=22.16.0"
           cache: pnpm
       - uses: foundry-rs/foundry-toolchain@v1
+      - run: echo ::add-matcher::.github/matcher.json
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm test

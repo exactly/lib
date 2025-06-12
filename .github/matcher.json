@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/refs/heads/master/src/schemas/json/task.json",
+  "problemMatcher": [
+    {
+      "owner": "changesets",
+      "pattern": [{ "regexp": "^🦋\\s+(\\x1B\\[\\d+m)?(error|warn)(\\x1B\\[\\d+m)?\\s+(.*)$", "message": 4 }]
+    },
+    {
+      "owner": "cspell",
+      "severity": "warning",
+      "pattern": [{ "regexp": "^(.*):(\\d+):(\\d+) - (.*)$", "file": 1, "line": 2, "column": 3, "message": 4 }]
+    },
+    {
+      "owner": "markdownlint",
+      "pattern": [
+        {
+          "regexp": "^([^:]*):\\s*(\\d+):?(\\d+)?\\s+(MD\\d{3}\/[a-z\\d/-]+)\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "code": 4,
+          "message": 5
+        }
+      ]
+    },
+    {
+      "owner": "pnpm-audit",
+      "pattern": [{ "regexp": "^│\\s(low|moderate|high|critical)\\s*│\\s(.+?)\\s*│$", "message": 2 }]
+    }
+  ]
+}

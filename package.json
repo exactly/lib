@@ -8,10 +8,10 @@
     "prepare:build": "pnpm build",
     "prepare:test": "wagmi generate",
     "build": "tsup",
-    "test": "pnpm run --aggregate-output /test:/",
+    "test": "pnpm run --aggregate-output --reporter-hide-prefix /test:/",
     "test:vi": "vitest run",
-    "test:ts:lib": "tsc",
-    "test:ts:dev": "tsc -p tsconfig.dev.json",
+    "test:ts:lib": "tsc --pretty $([ \"$GITHUB_ACTIONS\" = true ] && echo false || echo true)",
+    "test:ts:dev": "tsc -p tsconfig.dev.json --pretty $([ \"$GITHUB_ACTIONS\" = true ] && echo false || echo true)",
     "test:spell": "cspell --gitignore '**' '.changeset/**' '.cursor/**' '.github/**' '.eslintrc.*'",
     "test:lint": "eslint --max-warnings 0 ."
   },

@@ -38,7 +38,7 @@ export default async function setup({ provide }: TestProject) {
   provide("RatePreviewer", ratePreviewer.contractAddress);
   provide("USDC", usdc.contractAddress);
 
-  await anvilClient.setAutomine(false);
+  if (initialize) await anvilClient.setAutomine(false);
 
   return async function teardown() {
     await instance.stop();

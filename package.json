@@ -12,7 +12,7 @@
     "test:vi": "vitest run",
     "test:ts:lib": "tsc",
     "test:ts:dev": "tsc -p tsconfig.dev.json",
-    "test:lint": "eslint ."
+    "test:lint": "eslint --max-warnings 0 ."
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",

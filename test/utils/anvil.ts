@@ -1,14 +1,14 @@
 import { $ } from "execa";
 import { anvil } from "prool/instances";
-import { brand, check, type InferOutput, literal, null_, object, parse, pipe, string, transform, tuple } from "valibot";
+import { brand, check, type InferOutput, literal, object, parse, pipe, string, transform, tuple } from "valibot";
 import { type Address as ViemAddress, checksumAddress, isAddress, padHex, zeroAddress } from "viem";
 import { privateKeyToAddress } from "viem/accounts";
 import { foundry } from "viem/chains";
-import type { GlobalSetupContext } from "vitest/node";
+import type { TestProject } from "vitest/node";
 
 import anvilClient from "./anvilClient.js";
 
-export default async function setup({ provide }: GlobalSetupContext) {
+export default async function setup({ provide }: TestProject) {
   const instance = anvil({ codeSizeLimit: 42_000, blockBaseFeePerGas: 1n, blockTime: 1, timestamp: 0 });
   const initialize = await instance
     .start()
@@ -58,7 +58,7 @@ const Protocol = object({
     object({ transactionType: literal("CREATE"), contractName: literal("Auditor") }),
     object({ transactionType: literal("CREATE"), contractName: literal("ERC1967Proxy"), contractAddress: Address }),
     object({ transactionType: literal("CALL") }),
-    object({ transactionType: literal("CREATE"), contractName: null_(), contractAddress: Address }),
+    object({ transactionType: literal("CREATE"), contractName: literal("MockERC20"), contractAddress: Address }),
     object({ transactionType: literal("CREATE"), contractName: literal("Market") }),
     object({ transactionType: literal("CREATE"), contractName: literal("ERC1967Proxy"), contractAddress: Address }),
     object({ transactionType: literal("CALL") }),
@@ -66,7 +66,7 @@ const Protocol = object({
     object({ transactionType: literal("CALL") }),
     object({ transactionType: literal("CREATE"), contractName: literal("MockPriceFeed") }),
     object({ transactionType: literal("CALL") }),
-    object({ transactionType: literal("CREATE"), contractName: null_(), contractAddress: Address }),
+    object({ transactionType: literal("CREATE"), contractName: literal("MockERC20"), contractAddress: Address }),
     object({ transactionType: literal("CREATE"), contractName: literal("Market") }),
     object({ transactionType: literal("CREATE"), contractName: literal("ERC1967Proxy"), contractAddress: Address }),
     object({ transactionType: literal("CALL") }),

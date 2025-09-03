@@ -2,23 +2,22 @@ import js from "@eslint/js";
 // @ts-expect-error missing types
 import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import vitest from "@vitest/eslint-plugin";
-import { globalIgnores } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 // @ts-expect-error missing types
 import universe from "eslint-config-universe/flat/node.js";
-// @ts-expect-error missing types
 import { flatConfigs as importPlugin } from "eslint-plugin-import";
 import node from "eslint-plugin-n";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import ts from "typescript-eslint";
 
-export default ts.config(
+export default defineConfig(
   js.configs.recommended,
   ts.configs.strictTypeChecked, // eslint-disable-line import/no-named-as-default-member
   ts.configs.stylisticTypeChecked, // eslint-disable-line import/no-named-as-default-member
   comments.recommended, // eslint-disable-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-  importPlugin.recommended, // eslint-disable-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-  importPlugin.typescript, // eslint-disable-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  importPlugin.recommended,
+  importPlugin.typescript,
   node.configs["flat/recommended"],
   unicorn.configs.recommended,
   universe, // eslint-disable-line @typescript-eslint/no-unsafe-argument
@@ -42,6 +41,7 @@ export default ts.config(
   },
   {
     files: ["test/**"],
+    // @ts-expect-error https://github.com/vitest-dev/eslint-plugin-vitest/issues/737
     plugins: { vitest },
     rules: {
       ...vitest.configs.all.rules,

@@ -9,7 +9,7 @@ import type { TestProject } from "vitest/node";
 import anvilClient from "./anvilClient.js";
 
 export default async function setup({ provide }: TestProject) {
-  const instance = anvil({ codeSizeLimit: 42_000, blockBaseFeePerGas: 1n, blockTime: 1, timestamp: 0 });
+  const instance = anvil({ codeSizeLimit: 42_000, blockBaseFeePerGas: 1n, timestamp: 0 });
   const initialize = await instance
     .start()
     .then(() => true)

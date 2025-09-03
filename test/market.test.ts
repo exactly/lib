@@ -1,3 +1,4 @@
+import { decodeFunctionResult, encodeFunctionData } from "viem";
 import { describe, expect, inject, it } from "vitest";
 
 import { marketUsdcAbi, ratePreviewerAbi } from "./generated/contracts.js";
@@ -7,44 +8,36 @@ import floatingDepositRates from "../src/market/floatingDepositRates.js";
 
 describe("floating deposit rate", () => {
   it("projects rate", async () => {
-    const interval = 100;
-    await anvilClient.mine({ blocks: 1, interval });
-
     const snapshot = await anvilClient.readContract({
       address: inject("RatePreviewer"),
       functionName: "snapshot",
       args: [],
       abi: ratePreviewerAbi,
     });
-
-    const exaUSDC = inject("MarketUSDC");
-    const usdcSnapshot = snapshot.find(({ market }) => market === exaUSDC);
+    const usdcSnapshot = snapshot.find(({ market }) => market === inject("MarketUSDC"));
 
     expect(usdcSnapshot).toBeDefined();
 
-    // eslint-disable-next-line vitest/no-conditional-in-test -- already expected to be defined
-    if (!usdcSnapshot) return;
+    if (!usdcSnapshot) return; // eslint-disable-line vitest/no-conditional-in-test -- already expected to be defined
 
+    const elapsed = 69_420;
     const block = await anvilClient.getBlock();
-    await anvilClient.mine({ blocks: 1, interval });
-    const newTotalAssets = await anvilClient.readContract({
-      address: exaUSDC,
-      functionName: "totalAssets",
-      args: [],
-      abi: marketUsdcAbi,
+    const { data = "0x" } = await anvilClient.call({
+      to: inject("MarketUSDC"),
+      data: encodeFunctionData({ functionName: "totalAssets", abi: marketUsdcAbi }),
+      blockOverrides: { time: block.timestamp + BigInt(elapsed) },
     });
+    const newTotalAssets = decodeFunctionResult({ data, functionName: "totalAssets", abi: marketUsdcAbi });
 
-    const newBlock = await anvilClient.getBlock();
-    const timePassed = newBlock.timestamp - block.timestamp;
-    const rates = floatingDepositRates(snapshot, Number(block.timestamp), Number(timePassed));
+    const rates = floatingDepositRates(snapshot, Number(block.timestamp), elapsed);
 
-    const rate = divWad(
-      ((newTotalAssets - usdcSnapshot.totalAssets) * BigInt(365 * 86_400)) / timePassed,
-      usdcSnapshot.totalAssets,
+    const usdcRate = rates.find(({ market }) => market === inject("MarketUSDC"))?.rate;
+
+    expect(usdcRate).toBe(
+      divWad(
+        ((newTotalAssets - usdcSnapshot.totalAssets) * BigInt(365 * 86_400)) / BigInt(elapsed),
+        usdcSnapshot.totalAssets,
+      ),
     );
-
-    const usdcRate = rates.find(({ market }) => market === exaUSDC)?.rate;
-
-    expect(usdcRate).toBe(rate);
   });
 });

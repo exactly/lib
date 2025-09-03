@@ -51,7 +51,7 @@ function fixedPoolEarnings(pools: readonly FixedPool[], timestamp: number) {
     if (maturity > lastAccrual) {
       backupEarnings +=
         timestamp < maturity
-          ? mulDiv(unassignedEarnings, BigInt(timestamp) - lastAccrual, BigInt(maturity - lastAccrual))
+          ? mulDiv(unassignedEarnings, BigInt(timestamp) - lastAccrual, maturity - lastAccrual)
           : unassignedEarnings;
     }
   }

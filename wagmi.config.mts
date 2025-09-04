@@ -5,6 +5,7 @@ import type { Abi } from "viem";
 export default defineConfig({
   out: "test/generated/contracts.ts",
   contracts: [
+    { name: "IntegrationPreviewer", abi: loadDeployment("IntegrationPreviewer").abi },
     { name: "Previewer", abi: loadDeployment("Previewer").abi },
     { name: "RatePreviewer", abi: loadDeployment("RatePreviewer").abi },
     { name: "MarketUSDC", abi: loadDeployment("MarketUSDC").abi },

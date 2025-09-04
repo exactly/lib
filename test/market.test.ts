@@ -1,9 +1,12 @@
 import { decodeFunctionResult, encodeFunctionData } from "viem";
-import { describe, expect, inject, it } from "vitest";
+import { beforeEach, describe, expect, inject, it } from "vitest";
 
-import { marketUsdcAbi, ratePreviewerAbi } from "./generated/contracts.js";
+import { integrationPreviewerAbi, marketUsdcAbi, ratePreviewerAbi } from "./generated/contracts.js";
 import anvilClient from "./utils/anvilClient.js";
+import MAX_UINT256 from "../src/fixed-point-math/MAX_UINT256.js";
 import divWad from "../src/fixed-point-math/divWad.js";
+import { MATURITY_INTERVAL } from "../src/interest-rate-model/fixedRate.js";
+import fixedRepayAssets, { type FixedRepaySnapshot } from "../src/market/fixedRepayAssets.js";
 import floatingDepositRates from "../src/market/floatingDepositRates.js";
 
 describe("floating deposit rate", () => {
@@ -39,5 +42,111 @@ describe("floating deposit rate", () => {
         usdcSnapshot.totalAssets,
       ),
     );
+  });
+});
+
+describe("fixed repay", () => {
+  let snapshot: FixedRepaySnapshot;
+
+  beforeEach(async () => {
+    snapshot = await anvilClient.readContract({
+      address: inject("IntegrationPreviewer"),
+      functionName: "fixedRepaySnapshot",
+      args: [inject("deployer"), inject("MarketUSDC"), BigInt(MATURITY_INTERVAL)],
+      abi: integrationPreviewerAbi,
+    });
+  });
+
+  describe("assets", () => {
+    it("calculates before maturity", async () => {
+      const timestamp = 69_420;
+      const positionAssets = 420_000_000n;
+
+      const repayAssets = fixedRepayAssets(snapshot, MATURITY_INTERVAL, positionAssets, timestamp);
+
+      const { data = "0x" } = await anvilClient.call({
+        account: inject("deployer"),
+        to: inject("MarketUSDC"),
+        data: encodeFunctionData({
+          functionName: "repayAtMaturity",
+          args: [BigInt(MATURITY_INTERVAL), positionAssets, MAX_UINT256, inject("deployer")],
+          abi: marketUsdcAbi,
+        }),
+        blockOverrides: { time: BigInt(timestamp) },
+      });
+
+      expect(repayAssets).toBe(decodeFunctionResult({ data, functionName: "repayAtMaturity", abi: marketUsdcAbi }));
+    });
+
+    it("calculates after maturity", async () => {
+      const timestamp = 69_420 + MATURITY_INTERVAL;
+      const positionAssets = 420_000_000n;
+
+      const repayAssets = fixedRepayAssets(snapshot, MATURITY_INTERVAL, positionAssets, timestamp);
+
+      const { data = "0x" } = await anvilClient.call({
+        account: inject("deployer"),
+        to: inject("MarketUSDC"),
+        data: encodeFunctionData({
+          functionName: "repayAtMaturity",
+          args: [BigInt(MATURITY_INTERVAL), positionAssets, MAX_UINT256, inject("deployer")],
+          abi: marketUsdcAbi,
+        }),
+        blockOverrides: { time: BigInt(timestamp) },
+      });
+
+      expect(repayAssets).toBe(decodeFunctionResult({ data, functionName: "repayAtMaturity", abi: marketUsdcAbi }));
+    });
+
+    it("calculates with max position before maturity", async () => {
+      const timestamp = 69_420;
+
+      const repayAssets = fixedRepayAssets(snapshot, MATURITY_INTERVAL, MAX_UINT256, timestamp);
+
+      const { data = "0x" } = await anvilClient.call({
+        account: inject("deployer"),
+        to: inject("MarketUSDC"),
+        data: encodeFunctionData({
+          functionName: "repayAtMaturity",
+          args: [BigInt(MATURITY_INTERVAL), MAX_UINT256, MAX_UINT256, inject("deployer")],
+          abi: marketUsdcAbi,
+        }),
+        blockOverrides: { time: BigInt(timestamp) },
+      });
+
+      expect(repayAssets).toBe(decodeFunctionResult({ data, functionName: "repayAtMaturity", abi: marketUsdcAbi }));
+    });
+
+    it("calculates with max position after maturity", async () => {
+      const timestamp = 69_420 + MATURITY_INTERVAL;
+
+      const repayAssets = fixedRepayAssets(snapshot, MATURITY_INTERVAL, MAX_UINT256, timestamp);
+
+      const { data = "0x" } = await anvilClient.call({
+        account: inject("deployer"),
+        to: inject("MarketUSDC"),
+        data: encodeFunctionData({
+          functionName: "repayAtMaturity",
+          args: [BigInt(MATURITY_INTERVAL), MAX_UINT256, MAX_UINT256, inject("deployer")],
+          abi: marketUsdcAbi,
+        }),
+        blockOverrides: { time: BigInt(timestamp) },
+      });
+
+      expect(repayAssets).toBe(decodeFunctionResult({ data, functionName: "repayAtMaturity", abi: marketUsdcAbi }));
+    });
+
+    it("calculates with empty position", () => {
+      const timestamp = 69_420;
+
+      const repayAssets = fixedRepayAssets(
+        { ...snapshot, principal: 0n, fee: 0n },
+        MATURITY_INTERVAL,
+        MAX_UINT256,
+        timestamp,
+      );
+
+      expect(repayAssets).toBe(0n);
+    });
   });
 });

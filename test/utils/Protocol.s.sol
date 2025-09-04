@@ -11,6 +11,7 @@ import { MockPriceFeed } from "@exactly/protocol/mocks/MockPriceFeed.sol";
 import { IntegrationPreviewer } from "@exactly/protocol/periphery/IntegrationPreviewer.sol";
 import { Previewer } from "@exactly/protocol/periphery/Previewer.sol";
 import { RatePreviewer } from "@exactly/protocol/periphery/RatePreviewer.sol";
+import { FixedLib } from "@exactly/protocol/utils/FixedLib.sol";
 
 import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
@@ -102,6 +103,8 @@ contract DeployProtocol is Script {
     weth.approve(address(exaWETH), type(uint256).max);
     exaWETH.deposit(100e18, msg.sender);
     exaWETH.borrow(10e18, msg.sender, msg.sender);
+
+    exaUSDC.borrowAtMaturity(FixedLib.INTERVAL, 1000e6, type(uint256).max, msg.sender, msg.sender);
 
     vm.stopBroadcast();
   }

@@ -5,8 +5,10 @@ import { integrationPreviewerAbi, marketUsdcAbi, ratePreviewerAbi } from "./gene
 import anvilClient from "./utils/anvilClient.js";
 import MAX_UINT256 from "../src/fixed-point-math/MAX_UINT256.js";
 import divWad from "../src/fixed-point-math/divWad.js";
-import { MATURITY_INTERVAL } from "../src/interest-rate-model/fixedRate.js";
+import mulWad from "../src/fixed-point-math/mulWad.js";
+import { MATURITY_INTERVAL, WAD } from "../src/interest-rate-model/fixedRate.js";
 import fixedRepayAssets, { type FixedRepaySnapshot } from "../src/market/fixedRepayAssets.js";
+import fixedRepayPosition from "../src/market/fixedRepayPosition.js";
 import floatingDepositRates from "../src/market/floatingDepositRates.js";
 
 describe("floating deposit rate", () => {
@@ -147,6 +149,143 @@ describe("fixed repay", () => {
       );
 
       expect(repayAssets).toBe(0n);
+    });
+  });
+
+  describe("position", () => {
+    it("calculates before maturity", async () => {
+      const timestamp = 69_420;
+      const repayAssets = 420_000_000n;
+
+      const positionAssets = fixedRepayPosition(snapshot, MATURITY_INTERVAL, repayAssets, timestamp);
+
+      const { data = "0x" } = await anvilClient.call({
+        account: inject("deployer"),
+        to: inject("MarketUSDC"),
+        data: encodeFunctionData({
+          functionName: "repayAtMaturity",
+          args: [BigInt(MATURITY_INTERVAL), positionAssets, MAX_UINT256, inject("deployer")],
+          abi: marketUsdcAbi,
+        }),
+        blockOverrides: { time: BigInt(timestamp) },
+      });
+
+      expect(repayAssets).toBe(decodeFunctionResult({ data, functionName: "repayAtMaturity", abi: marketUsdcAbi }));
+    });
+
+    it("calculates after maturity", async () => {
+      const timestamp = 69_420 + MATURITY_INTERVAL;
+      const repayAssets = 420_000_000n;
+
+      const positionAssets = fixedRepayPosition(snapshot, MATURITY_INTERVAL, repayAssets, timestamp);
+
+      const { data = "0x" } = await anvilClient.call({
+        account: inject("deployer"),
+        to: inject("MarketUSDC"),
+        data: encodeFunctionData({
+          functionName: "repayAtMaturity",
+          args: [BigInt(MATURITY_INTERVAL), positionAssets, MAX_UINT256, inject("deployer")],
+          abi: marketUsdcAbi,
+        }),
+        blockOverrides: { time: BigInt(timestamp) },
+      });
+      const actualRepayAssets = decodeFunctionResult({ data, functionName: "repayAtMaturity", abi: marketUsdcAbi });
+
+      expect(actualRepayAssets).toBeLessThanOrEqual(repayAssets);
+      expect(repayAssets - actualRepayAssets).toBeLessThanOrEqual(1n);
+    });
+
+    it("calculates with max position", () => {
+      const positionAssets = fixedRepayPosition(snapshot, MATURITY_INTERVAL, MAX_UINT256, 69_420);
+
+      expect(positionAssets).toBe(snapshot.principal + snapshot.fee);
+    });
+
+    it("calculates with empty position", () => {
+      const positionAssets = fixedRepayPosition(
+        { ...snapshot, principal: 0n, fee: 0n },
+        MATURITY_INTERVAL,
+        MAX_UINT256,
+        69_420,
+      );
+
+      expect(positionAssets).toBe(0n);
+    });
+
+    it("calculates without unassigned earnings", () => {
+      const repayAssets = 420_000_000n;
+
+      const positionAssets = fixedRepayPosition(
+        { ...snapshot, unassignedEarnings: 0n },
+        MATURITY_INTERVAL,
+        repayAssets,
+        69_420,
+      );
+
+      expect(positionAssets).toBe(repayAssets);
+    });
+
+    it("calculates without backup supplied", () => {
+      const repayAssets = 420_000_000n;
+
+      const positionAssets = fixedRepayPosition(
+        { ...snapshot, supplied: snapshot.borrowed },
+        MATURITY_INTERVAL,
+        repayAssets,
+        69_420,
+      );
+
+      expect(positionAssets).toBe(repayAssets);
+    });
+
+    it("calculates without principal", () => {
+      const repayAssets = 69n;
+
+      const positionAssets = fixedRepayPosition({ ...snapshot, principal: 0n }, MATURITY_INTERVAL, repayAssets, 69_420);
+
+      expect(positionAssets).toBe(repayAssets);
+    });
+
+    it("calculates without net unassigned earnings", () => {
+      const repayAssets = 420_000_000n;
+
+      const positionAssets = fixedRepayPosition(
+        { ...snapshot, unassignedEarnings: 1n },
+        MATURITY_INTERVAL,
+        repayAssets,
+        69_420,
+      );
+
+      expect(positionAssets).toBe(repayAssets);
+    });
+
+    it("calculates with high earnings proportion", () => {
+      const timestamp = 69_420;
+      const repayAssets = 420_000_000n;
+
+      const positionAssets = fixedRepayPosition(
+        { ...snapshot, supplied: snapshot.borrowed - 1n, lastAccrual: BigInt(timestamp) },
+        MATURITY_INTERVAL,
+        repayAssets,
+        timestamp,
+      );
+
+      expect(positionAssets).toBe(repayAssets + mulWad(snapshot.unassignedEarnings, WAD - snapshot.backupFeeRate));
+    });
+
+    it("calculates with high saturated fallback", () => {
+      const timestamp = 69_420;
+      const repayAssets = 420_000_000n;
+      const unassignedEarnings = 420n;
+
+      const positionAssets = fixedRepayPosition(
+        { ...snapshot, supplied: snapshot.borrowed - 420n, unassignedEarnings, lastAccrual: BigInt(timestamp) },
+        MATURITY_INTERVAL,
+        repayAssets,
+        timestamp,
+      );
+
+      expect(positionAssets).toBe(repayAssets + mulWad(unassignedEarnings, WAD - snapshot.backupFeeRate));
     });
   });
 });

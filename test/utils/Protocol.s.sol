@@ -8,6 +8,7 @@ import { InterestRateModel, Parameters } from "@exactly/protocol/InterestRateMod
 import { Market } from "@exactly/protocol/Market.sol";
 import { MockBalancerVault } from "@exactly/protocol/mocks/MockBalancerVault.sol";
 import { MockPriceFeed } from "@exactly/protocol/mocks/MockPriceFeed.sol";
+import { IntegrationPreviewer } from "@exactly/protocol/periphery/IntegrationPreviewer.sol";
 import { Previewer } from "@exactly/protocol/periphery/Previewer.sol";
 import { RatePreviewer } from "@exactly/protocol/periphery/RatePreviewer.sol";
 
@@ -27,6 +28,7 @@ contract DeployProtocol is Script {
   MockWETH public weth;
   Previewer public previewer;
   RatePreviewer public ratePreviewer;
+  IntegrationPreviewer public integrationPreviewer;
 
   MockBalancerVault public balancer;
 
@@ -78,6 +80,7 @@ contract DeployProtocol is Script {
 
     previewer = new Previewer(auditor, IPriceFeed(address(0)));
     ratePreviewer = new RatePreviewer(auditor);
+    integrationPreviewer = new IntegrationPreviewer(auditor);
 
     balancer = new MockBalancerVault();
     exa.mint(address(balancer), 1_000_000e18);

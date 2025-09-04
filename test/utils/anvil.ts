@@ -86,6 +86,11 @@ const Protocol = object({
     object({ transactionType: literal("CREATE"), contractName: literal("RatePreviewer"), contractAddress: Address }),
     object({
       transactionType: literal("CREATE"),
+      contractName: literal("IntegrationPreviewer"),
+      contractAddress: Address,
+    }),
+    object({
+      transactionType: literal("CREATE"),
       contractName: literal("MockBalancerVault"),
       contractAddress: Address,
     }),

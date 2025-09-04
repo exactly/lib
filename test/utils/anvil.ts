@@ -1,8 +1,7 @@
 import { $ } from "execa";
 import { anvil } from "prool/instances";
 import { brand, check, type InferOutput, literal, object, parse, pipe, string, transform, tuple } from "valibot";
-import { type Address as ViemAddress, checksumAddress, isAddress, padHex, zeroAddress } from "viem";
-import { privateKeyToAddress } from "viem/accounts";
+import { type Address as ViemAddress, checksumAddress, isAddress, zeroAddress } from "viem";
 import { foundry } from "viem/chains";
 import type { TestProject } from "vitest/node";
 
@@ -15,13 +14,14 @@ export default async function setup({ provide }: TestProject) {
     .then(() => true)
     .catch(() => false);
 
-  const keeperAddress = privateKeyToAddress(padHex("0x69"));
-  if (initialize) await anvilClient.setBalance({ address: keeperAddress, value: 10n ** 24n });
-
-  const deployer = await anvilClient
-    .getAddresses()
-    .then(([address]) => address ?? zeroAddress)
-    .catch(() => zeroAddress);
+  const deployer = parse(
+    Address,
+    await anvilClient
+      .getAddresses()
+      .then(([address]) => address ?? zeroAddress)
+      .catch(() => zeroAddress),
+  );
+  provide("deployer", deployer);
 
   if (initialize) {
     await $`forge script test/utils/Protocol.s.sol --code-size-limit 42000
@@ -94,6 +94,7 @@ const Protocol = object({
 
 declare module "vitest" {
   export interface ProvidedContext {
+    deployer: Address;
     MarketUSDC: Address;
     MarketWETH: Address;
     Previewer: Address;

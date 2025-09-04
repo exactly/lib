@@ -28,10 +28,18 @@ export default async function setup({ provide }: TestProject) {
       --sender ${deployer} --unlocked ${deployer} --rpc-url ${foundry.rpcUrls.default.http[0]} --broadcast --slow`;
   }
 
-  // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
-  const [, , , , , , , , , , , usdc, , marketUSDC, , , , , , , , marketWETH, , , , , , previewer, ratePreviewer] =
-    parse(Protocol, await import(`broadcast/Protocol.s.sol/${String(foundry.id)}/run-latest.json`)).transactions;
+  const protocol = parse(
+    Protocol,
+    await import(`broadcast/Protocol.s.sol/${String(foundry.id)}/run-latest.json`),
+  ).transactions;
+  const usdc = protocol[11];
+  const marketUSDC = protocol[13];
+  const marketWETH = protocol[21];
+  const previewer = protocol[27];
+  const ratePreviewer = protocol[28];
+  const integrationPreviewer = protocol[29];
 
+  provide("IntegrationPreviewer", integrationPreviewer.contractAddress);
   provide("MarketUSDC", marketUSDC.contractAddress);
   provide("MarketWETH", marketWETH.contractAddress);
   provide("Previewer", previewer.contractAddress);
@@ -100,6 +108,7 @@ const Protocol = object({
 declare module "vitest" {
   export interface ProvidedContext {
     deployer: Address;
+    IntegrationPreviewer: Address;
     MarketUSDC: Address;
     MarketWETH: Address;
     Previewer: Address;

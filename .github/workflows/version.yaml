@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
 concurrency: ${{ github.workflow }}-${{ github.ref }}
+permissions:
+  id-token: write
 jobs:
   version:
     environment: version
@@ -33,4 +35,4 @@ jobs:
           setupGitUser: false
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

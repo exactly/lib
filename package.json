@@ -15,6 +15,7 @@
     "test:sol": "forge fmt --check",
     "test:spell": "cspell --gitignore '**' '.changeset/**' '.cursor/**' '.github/**' '.eslintrc.*'",
     "test:markdown": "markdownlint '**/*.md' '**/*.mdx' '.changeset/**/*.md' '.cursor/**/*.mdc'",
+    "test:changeset": "changeset status --since origin/main",
     "test:lint": "eslint --max-warnings 0 ."
   },
   "main": "dist/index.js",

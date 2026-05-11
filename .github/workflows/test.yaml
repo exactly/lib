@@ -7,17 +7,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - uses: pnpm/action-setup@v4
-        with:
-          version: "9.15.9"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ">=22.16.0"
-          cache: pnpm
+      - uses: actions/checkout@v6
+        with: { fetch-depth: 0, fetch-tags: true }
+      - uses: pnpm/action-setup@v6
+        with: { version: "9.15.9" }
+      - uses: actions/setup-node@v6
+        with: { node-version: ">=22.16.0", cache: pnpm }
       - uses: foundry-rs/foundry-toolchain@v1
         with: { version: v1.5.1 }
       - run: echo ::add-matcher::.github/matcher.json
@@ -25,7 +20,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v6
         if: always()
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        with: { token: "${{ secrets.CODECOV_TOKEN }}" }

@@ -25,7 +25,7 @@ export default async function setup({ provide }: TestProject) {
 
   if (initialize) {
     await $`forge script test/utils/Protocol.s.sol --code-size-limit 42000
-      --sender ${deployer} --unlocked ${deployer} --rpc-url ${foundry.rpcUrls.default.http[0]} --broadcast --slow`;
+      --sender ${deployer} --unlocked --rpc-url ${foundry.rpcUrls.default.http[0]} --broadcast --slow`;
   }
 
   const protocol = parse(

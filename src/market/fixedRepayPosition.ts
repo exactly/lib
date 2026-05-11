@@ -39,6 +39,11 @@ export default function fixedRepayPosition(
   const r = mulDiv(netUnassignedEarnings, k, backupSupplied);
   if (r >= WAD) return min(assets + netUnassignedEarnings, totalPosition);
   const x = divWad(assets, WAD - r);
-  if (mulWad(k, x) <= backupSupplied && x <= totalPosition) return x;
+  const scaledPrincipal = mulDiv(x, principal, totalPosition);
+  const gross = mulDiv(unassignedEarnings, min(scaledPrincipal, backupSupplied), backupSupplied);
+  const pos = min(assets + gross - mulWad(gross, backupFeeRate), totalPosition);
+  const earned = mulDiv(unassignedEarnings, min(mulDiv(pos, principal, totalPosition), backupSupplied), backupSupplied);
+  const repay = pos - earned + mulWad(earned, backupFeeRate);
+  if (scaledPrincipal <= backupSupplied && x <= totalPosition) return pos - (repay > assets ? repay - assets : 0n);
   return min(assets + netUnassignedEarnings, totalPosition);
 }

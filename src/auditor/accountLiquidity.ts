@@ -9,7 +9,7 @@ import mulWad from "../fixed-point-math/mulWad.js";
 export default function accountLiquidity(
   data: AccountLiquidityData,
   timestamp = Math.floor(Date.now() / 1000),
-  haircuts?: Haircuts,
+  haircuts: Haircuts = defaultHaircuts,
 ): {
   adjCollateral: bigint;
   adjDebt: bigint;
@@ -95,6 +95,8 @@ export function marketHaircut(haircuts: Haircuts | undefined, market: string): b
   const lower = market.toLowerCase();
   return haircuts[lower] ?? Object.entries(haircuts).find(([key]) => key.toLowerCase() === lower)?.[1] ?? 0n;
 }
+
+export const defaultHaircuts: Haircuts = { "0x1Dcf89Dfa88363ef33d49dD591b1eE5e84DD0F75": WAD / 2n }; // cbXRP on base: 50%
 
 export type Haircuts = Readonly<Record<string, bigint>>;
 

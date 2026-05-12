@@ -1,4 +1,5 @@
 import accountLiquidity, {
+  defaultHaircuts,
   marketHaircut,
   normalizeDebt,
   type AccountLiquidityData,
@@ -12,7 +13,7 @@ export default function borrowLimit(
   market: string,
   targetHealthFactor = (WAD * 105n) / 100n,
   timestamp?: number,
-  haircuts?: Haircuts,
+  haircuts: Haircuts = defaultHaircuts,
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp, haircuts);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());

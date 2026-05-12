@@ -1,5 +1,6 @@
 import accountLiquidity, {
   adjustCollateral,
+  defaultHaircuts,
   marketHaircut,
   normalizeCollateral,
   type AccountLiquidityData,
@@ -13,7 +14,7 @@ export default function withdrawLimit(
   market: string,
   targetHealthFactor = (WAD * 105n) / 100n,
   timestamp?: number,
-  haircuts?: Haircuts,
+  haircuts: Haircuts = defaultHaircuts,
 ): bigint {
   const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp, haircuts);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());

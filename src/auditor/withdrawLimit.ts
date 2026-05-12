@@ -1,5 +1,10 @@
-import type { AccountLiquidityData } from "./accountLiquidity.js";
-import accountLiquidity, { adjustCollateral, normalizeCollateral } from "./accountLiquidity.js";
+import accountLiquidity, {
+  adjustCollateral,
+  marketHaircut,
+  normalizeCollateral,
+  type AccountLiquidityData,
+  type Haircuts,
+} from "./accountLiquidity.js";
 import WAD from "../fixed-point-math/WAD.js";
 import mulWad from "../fixed-point-math/mulWad.js";
 
@@ -8,8 +13,9 @@ export default function withdrawLimit(
   market: string,
   targetHealthFactor = (WAD * 105n) / 100n,
   timestamp?: number,
+  haircuts?: Haircuts,
 ): bigint {
-  const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp);
+  const { adjCollateral, adjDebt } = accountLiquidity(data, timestamp, haircuts);
   const marketData = data.find(({ market: m }) => m.toLowerCase() === market.toLowerCase());
   if (!marketData) throw new Error("market not found");
 
@@ -21,9 +27,12 @@ export default function withdrawLimit(
 
   if (adjCollateral <= minAdjCollateral) return 0n;
 
-  const adjCollateralMarket = adjustCollateral(floatingDepositAssets, usdPrice, baseUnit, adjustFactor);
-  if (adjCollateral - adjCollateralMarket >= minAdjCollateral) return floatingDepositAssets;
+  const adjusted = adjustCollateral(floatingDepositAssets, usdPrice, baseUnit, adjustFactor);
+  const haircut = marketHaircut(haircuts, marketData.market);
+  if (adjCollateral - (haircut ? mulWad(adjusted, WAD - haircut) : adjusted) >= minAdjCollateral) {
+    return floatingDepositAssets;
+  }
 
   const withdrawable = adjCollateral - minAdjCollateral;
-  return normalizeCollateral(withdrawable, usdPrice, baseUnit, adjustFactor);
+  return normalizeCollateral(withdrawable, usdPrice, baseUnit, adjustFactor, haircut);
 }

@@ -157,6 +157,57 @@ describe("with static data", () => {
 
     expect(healthFactor(exaBorrowedTooMuch, 0)).toBeLessThan(targetHF);
   });
+
+  it("account liquidity with haircuts", () => {
+    const { collateral, debt } = exactlyAccountLiquidity();
+    const haircut = parseUnits("0.1", 18);
+    const remaining = WAD - haircut;
+    const usdcAdjCollateral = mulDiv(parseUnits("10000", 6), parseUnits("0.91", 18), 10n ** 6n);
+    const usdcAdjDebt = divWadUp(parseUnits("3000", 18), parseUnits("0.91", 18));
+    const { adjCollateral, adjDebt } = accountLiquidity(exactly, 0, { [exactly[0].market]: haircut });
+
+    expect(adjCollateral).toBe(collateral - usdcAdjCollateral + mulWad(usdcAdjCollateral, remaining));
+    expect(adjDebt).toBe(debt - usdcAdjDebt + divWadUp(usdcAdjDebt, remaining));
+  });
+
+  it("matches haircut keys case-insensitively", () => {
+    const haircut = parseUnits("0.1", 18);
+    const exact = { [exactly[0].market]: haircut };
+    const lowercase = { [exactly[0].market.toLowerCase()]: haircut };
+
+    expect(accountLiquidity(exactly, 0, lowercase)).toStrictEqual(accountLiquidity(exactly, 0, exact));
+    expect(withdrawLimit(exactly, exactly[0].market, WAD, 0, lowercase)).toBe(
+      withdrawLimit(exactly, exactly[0].market, WAD, 0, exact),
+    );
+    expect(borrowLimit(exactly, exactly[0].market, WAD, 0, lowercase)).toBe(
+      borrowLimit(exactly, exactly[0].market, WAD, 0, exact),
+    );
+  });
+
+  it("account liquidity rejects invalid haircuts", () => {
+    expect(() => accountLiquidity(exactly, 0, { [exactly[0].market]: parseUnits("1.01", 18) })).toThrow(
+      "haircut outside [0, 1]",
+    );
+
+    expect(() => accountLiquidity(exactly, 0, { [exactly[0].market]: -1n })).toThrow("haircut outside [0, 1]");
+  });
+
+  it("normalizes collateral with a full haircut", () => {
+    expect(normalizeCollateral(0n, WAD, 1n, WAD, WAD)).toBe(0n);
+    expect(normalizeCollateral(1n, WAD, 1n, WAD, WAD)).toBe(MAX_UINT256);
+  });
+
+  it("withdraw limit forwards haircuts", () => {
+    expect(
+      withdrawLimit(exactly, exactly[0].market, WAD, 0, { [exactly[0].market]: parseUnits("0.01", 18) }),
+    ).toBeLessThan(withdrawLimit(exactly, exactly[0].market, WAD, 0));
+  });
+
+  it("borrow limit forwards haircuts", () => {
+    expect(
+      borrowLimit(exactly, exactly[0].market, WAD, 0, { [exactly[0].market]: parseUnits("0.01", 18) }),
+    ).toBeLessThan(borrowLimit(exactly, exactly[0].market, WAD, 0));
+  });
 });
 
 describe("with previewer data", async () => {

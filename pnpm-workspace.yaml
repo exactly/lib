@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+autoInstallPeers: false
+blockExoticSubdeps: false
+minimumReleaseAge: 1440

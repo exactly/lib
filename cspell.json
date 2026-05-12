@@ -11,8 +11,11 @@
     "anvil",
     "automine",
     "cruzdanilo",
+    "esbuild",
     "prool",
     "solmate",
+    "subdeps",
+    "unrs",
     "valibot",
     "viem",
     "wagmi"

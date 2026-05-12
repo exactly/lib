@@ -9,14 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with: { fetch-depth: 0, fetch-tags: true }
-      - uses: pnpm/action-setup@v6
-        with: { version: "9.15.9" }
       - uses: actions/setup-node@v6
-        with: { node-version: ">=22.16.0", cache: pnpm }
+        with: { node-version: 24 }
       - uses: foundry-rs/foundry-toolchain@v1
         with: { version: v1.5.1 }
       - run: echo ::add-matcher::.github/matcher.json
 
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 

@@ -34,6 +34,7 @@ jobs:
         with:
           title: ${{ steps.title.outputs.title }}
           publish: pnpm changeset publish
+          version: ./.changeset/version.sh
           setupGitUser: false
           prDraft: create
         env:

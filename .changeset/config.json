@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.0.3/schema.json",
   "changelog": ["@changesets/changelog-github", { "repo": "exactly/lib" }],
-  "baseBranch": "origin/main",
+  "baseBranch": "origin/uphold",
   "access": "public",
   "changedFilePatterns": ["**", "!pnpm-lock.yaml", "!package.json", "!CHANGELOG.md"],
   "commit": "./commit.config.cjs"

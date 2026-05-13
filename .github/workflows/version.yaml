@@ -1,6 +1,6 @@
 name: version
 on:
-  push: { branches: [main] }
+  push: { branches: [main, uphold] }
   workflow_dispatch:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions: { id-token: write }

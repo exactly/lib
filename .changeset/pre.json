@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "uphold",
+  "initialVersions": {
+    "@exactly/lib": "0.1.0"
+  },
+  "changesets": []
+}

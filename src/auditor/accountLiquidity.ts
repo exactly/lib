@@ -1,3 +1,5 @@
+import MAX_UINT256 from "../fixed-point-math/MAX_UINT256.js";
+import WAD from "../fixed-point-math/WAD.js";
 import divWad from "../fixed-point-math/divWad.js";
 import divWadUp from "../fixed-point-math/divWadUp.js";
 import mulDiv from "../fixed-point-math/mulDiv.js";
@@ -7,6 +9,7 @@ import mulWad from "../fixed-point-math/mulWad.js";
 export default function accountLiquidity(
   data: AccountLiquidityData,
   timestamp = Math.floor(Date.now() / 1000),
+  haircuts?: Haircuts,
 ): {
   adjCollateral: bigint;
   adjDebt: bigint;
@@ -14,6 +17,7 @@ export default function accountLiquidity(
   let adjCollateral = 0n;
   let adjDebt = 0n;
   for (const {
+    market,
     isCollateral,
     floatingBorrowAssets,
     floatingDepositAssets,
@@ -24,7 +28,13 @@ export default function accountLiquidity(
     usdPrice,
   } of data) {
     const baseUnit = 10n ** BigInt(decimals);
-    if (isCollateral) adjCollateral += adjustCollateral(floatingDepositAssets, usdPrice, baseUnit, adjustFactor);
+    const haircut = marketHaircut(haircuts, market);
+    if (haircut && (haircut < 0n || haircut > WAD)) throw new Error("haircut outside [0, 1]");
+
+    if (isCollateral) {
+      const adjusted = adjustCollateral(floatingDepositAssets, usdPrice, baseUnit, adjustFactor);
+      adjCollateral += haircut ? mulWad(adjusted, WAD - haircut) : adjusted;
+    }
 
     let totalDebt = floatingBorrowAssets;
     for (const { position, maturity } of fixedBorrowPositions) {
@@ -32,7 +42,8 @@ export default function accountLiquidity(
       totalDebt += positionAssets;
       if (timestamp > maturity) totalDebt += mulWad(positionAssets, (BigInt(timestamp) - maturity) * penaltyRate);
     }
-    adjDebt += adjustDebt(totalDebt, usdPrice, baseUnit, adjustFactor);
+    const debt = adjustDebt(totalDebt, usdPrice, baseUnit, adjustFactor);
+    adjDebt += haircut ? (haircut === WAD && debt !== 0n ? MAX_UINT256 : divWadUp(debt, WAD - haircut)) : debt;
   }
 
   return { adjCollateral, adjDebt };
@@ -56,13 +67,36 @@ export function normalizeCollateral(
   usdPrice: bigint,
   baseUnit: bigint,
   adjustFactor: bigint,
+  haircut?: bigint,
 ) {
-  return divWad(mulDiv(adjustedCollateral, baseUnit, usdPrice), adjustFactor);
+  if (haircut === WAD) return adjustedCollateral ? MAX_UINT256 : 0n;
+  return divWad(
+    mulDiv(haircut ? divWad(adjustedCollateral, WAD - haircut) : adjustedCollateral, baseUnit, usdPrice),
+    adjustFactor,
+  );
 }
 
-export function normalizeDebt(adjustedDebt: bigint, usdPrice: bigint, baseUnit: bigint, adjustFactor: bigint) {
-  return mulDiv(mulWad(adjustedDebt, adjustFactor), baseUnit, usdPrice);
+export function normalizeDebt(
+  adjustedDebt: bigint,
+  usdPrice: bigint,
+  baseUnit: bigint,
+  adjustFactor: bigint,
+  haircut?: bigint,
+) {
+  return mulDiv(mulWad(haircut ? mulWad(adjustedDebt, WAD - haircut) : adjustedDebt, adjustFactor), baseUnit, usdPrice);
 }
+
+export function marketHaircut(haircuts: Haircuts | undefined, market: string): bigint {
+  if (!haircuts) return 0n;
+
+  const exact = haircuts[market];
+  if (exact !== undefined) return exact;
+
+  const lower = market.toLowerCase();
+  return haircuts[lower] ?? Object.entries(haircuts).find(([key]) => key.toLowerCase() === lower)?.[1] ?? 0n;
+}
+
+export type Haircuts = Readonly<Record<string, bigint>>;
 
 export type AccountLiquidityData = readonly {
   market: string;

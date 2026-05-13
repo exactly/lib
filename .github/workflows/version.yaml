@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with: { token: "${{ secrets.RELEASE_GITHUB_TOKEN }}" }
+        with: { fetch-depth: 0, fetch-tags: true, token: "${{ secrets.RELEASE_GITHUB_TOKEN }}" }
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -21,7 +21,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - id: title
         run: |
-          pnpm changeset status --output=status.json 2>/dev/null || echo '{"releases":[]}' > status.json
+          pnpm changeset status --output=status.json
           node -e 'const release = require("./status.json").releases.find(({ type }) => type !== "none");
             console.log("title=" + (release ? "🔖 release: v" + release.newVersion : "🔖 release"))' >> $GITHUB_OUTPUT
           rm status.json

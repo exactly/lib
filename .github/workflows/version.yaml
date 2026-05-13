@@ -30,6 +30,7 @@ jobs:
           title: 🔖 new release
           publish: pnpm changeset publish
           setupGitUser: false
+          prDraft: create
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

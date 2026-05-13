@@ -4,5 +4,10 @@
   "initialVersions": {
     "@exactly/lib": "0.1.0"
   },
-  "changesets": []
+  "changesets": [
+    "brave-hoops-live",
+    "kind-walls-write",
+    "quiet-hairs-fail",
+    "stale-weeks-argue"
+  ]
 }

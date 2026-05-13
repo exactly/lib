@@ -2,6 +2,6 @@
 module.exports = {
   getVersionMessage: ({ releases: [release] }) => {
     if (!release) return Promise.reject(new Error("no release"));
-    return Promise.resolve(`🔖 package: v${release.newVersion}`);
+    return Promise.resolve(`🔖 release: v${release.newVersion}`);
   },
 };

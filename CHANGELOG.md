@@ -1,5 +1,11 @@
 # @exactly/lib
 
+## 0.1.1
+
+### Patch Changes
+
+- [#10](https://github.com/exactly/lib/pull/10) [`941f683`](https://github.com/exactly/lib/commit/941f68361a97d6531de34dda38f88c1a236ee7fc) Thanks [@cruzdanilo](https://github.com/cruzdanilo)! - 🩹 market: mirror fixed repay rounding in position preview
+
 ## 0.1.0
 
 ### Minor Changes

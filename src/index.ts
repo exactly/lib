@@ -30,6 +30,8 @@ export { default as floatingUtilization } from "./interest-rate-model/floatingUt
 export { default as globalUtilization } from "./interest-rate-model/globalUtilization.js";
 export type { default as IRMParameters, IRMFloatingParameters } from "./interest-rate-model/Parameters.ts";
 
+export { default as fixedBorrowAssets } from "./market/fixedBorrowAssets.js";
+export { default as fixedBorrowPosition, type FixedBorrowSnapshot } from "./market/fixedBorrowPosition.js";
 export { default as fixedRepayAssets } from "./market/fixedRepayAssets.js";
 export { default as fixedRepayPosition } from "./market/fixedRepayPosition.js";
 export { default as floatingDepositRates } from "./market/floatingDepositRates.js";
